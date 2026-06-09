@@ -1,0 +1,38 @@
+flutter_native_splash:
+  # Background color of the splash screen
+  color: "#1565C0"
+
+  # Optional: background image instead of color
+  # background_image: "assets/splash_background.png"
+
+  # The image to display on the splash screen (centered)
+  # Place a white OtoBuzz logo PNG at assets/splash/splash_logo.png
+  # image: assets/splash/splash_logo.png
+
+  # Android 12+ splash screen configuration
+  android_12:
+    color: "#1565C0"
+    # icon_background_color: "#1565C0"
+    # image: assets/splash/splash_logo.png
+
+  # Branding image shown at the bottom (optional)
+  # branding: assets/splash/branding.png
+
+  # Dark mode configuration
+  color_dark: "#0D47A1"
+  android_12:
+    color: "#1565C0"
+    color_dark: "#0D47A1"
+
+  # Platform specific toggles
+  android: true
+  ios: true
+  web: false
+
+  # Keep the native splash screen until manually removed
+  # This allows the Flutter splash to take over smoothly
+  # Call FlutterNativeSplash.remove() in your app when ready
+  # android_disable_fullscreen: false
+
+  # Fullscreen mode
+  fullscreen: true

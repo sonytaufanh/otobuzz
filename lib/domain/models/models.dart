@@ -1,0 +1,11 @@
+export 'vehicle.dart';
+export 'vehicle_type.dart';
+export 'vehicle_document.dart';
+export 'mileage_record.dart';
+export 'maintenance_record.dart';
+export 'maintenance_schedule.dart';
+export 'maintenance_type.dart';
+export 'maintenance_interval.dart';
+export 'custom_interval.dart';
+export 'driver.dart';
+export 'driver_assignment.dart';
