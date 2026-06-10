@@ -83,4 +83,26 @@ class MileageRepositoryImpl implements MileageRepository {
     );
     return (result.first['avg'] as num).toDouble();
   }
+
+  @override
+  Future<List<MileageRecord>> getRecordsByDateRange(
+      DateTime start, DateTime end,
+      {String? vehicleId}) async {
+    final db = await _dbHelper.database;
+    String where = 'date >= ? AND date <= ?';
+    List<dynamic> args = [start.toIso8601String(), end.toIso8601String()];
+
+    if (vehicleId != null) {
+      where += ' AND vehicleId = ?';
+      args.add(vehicleId);
+    }
+
+    final maps = await db.query(
+      'mileage_records',
+      where: where,
+      whereArgs: args,
+      orderBy: 'date ASC',
+    );
+    return maps.map((map) => MileageRecord.fromMap(map)).toList();
+  }
 }

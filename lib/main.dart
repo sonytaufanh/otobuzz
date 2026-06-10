@@ -6,17 +6,23 @@ import 'data/repositories/cost_report_repository.dart';
 import 'data/repositories/custom_interval_repository.dart';
 import 'data/repositories/driver_assignment_repository.dart';
 import 'data/repositories/driver_repository.dart';
+import 'data/repositories/fuel_repository.dart';
 import 'data/repositories/maintenance_history_repository_impl.dart';
 import 'data/repositories/maintenance_schedule_repository_impl.dart';
 import 'data/repositories/mileage_repository_impl.dart';
+import 'data/repositories/photo_repository.dart';
 import 'data/repositories/vehicle_document_repository.dart';
 import 'data/repositories/vehicle_repository_impl.dart';
 import 'data/services/notification_service.dart';
+import 'data/services/theme_service.dart';
 import 'domain/repositories/repositories.dart';
 import 'domain/usecases/usecases.dart';
+import 'presentation/blocs/analytics/analytics_bloc.dart';
 import 'presentation/blocs/cost_report/cost_report_bloc.dart';
+import 'presentation/blocs/fuel/fuel_bloc.dart';
 import 'presentation/blocs/maintenance/maintenance_bloc.dart';
 import 'presentation/blocs/mileage/mileage_bloc.dart';
+import 'presentation/blocs/theme/theme_cubit.dart';
 import 'presentation/blocs/vehicle/vehicle_bloc.dart';
 import 'presentation/screens/splash_screen.dart';
 
@@ -28,6 +34,7 @@ void main() async {
   await dbHelper.database; // Ensure DB is created
   final notificationService = NotificationService();
   await notificationService.initialize();
+  final themeService = ThemeService();
 
   // Create repositories
   final vehicleRepository = VehicleRepositoryImpl(dbHelper);
@@ -40,6 +47,8 @@ void main() async {
   final driverRepository = DriverRepository(dbHelper);
   final driverAssignmentRepository = DriverAssignmentRepository(dbHelper);
   final vehicleDocumentRepository = VehicleDocumentRepository(dbHelper);
+  final fuelRepository = FuelRepository(dbHelper);
+  final photoRepository = PhotoRepository(dbHelper);
 
   // Create use cases
   final calculator = MaintenanceCalculator(
@@ -73,10 +82,13 @@ void main() async {
     driverRepository: driverRepository,
     driverAssignmentRepository: driverAssignmentRepository,
     vehicleDocumentRepository: vehicleDocumentRepository,
+    fuelRepository: fuelRepository,
+    photoRepository: photoRepository,
     calculator: calculator,
     addMileageUseCase: addMileageUseCase,
     recordMaintenanceUseCase: recordMaintenanceUseCase,
     getSchedulesUseCase: getSchedulesUseCase,
+    themeService: themeService,
   ));
 }
 
@@ -90,10 +102,13 @@ class OtoBuzzApp extends StatelessWidget {
   final DriverRepository driverRepository;
   final DriverAssignmentRepository driverAssignmentRepository;
   final VehicleDocumentRepository vehicleDocumentRepository;
+  final FuelRepository fuelRepository;
+  final PhotoRepository photoRepository;
   final MaintenanceCalculator calculator;
   final AddDailyMileageUseCase addMileageUseCase;
   final RecordMaintenanceCompletedUseCase recordMaintenanceUseCase;
   final GetVehicleSchedulesUseCase getSchedulesUseCase;
+  final ThemeService themeService;
 
   const OtoBuzzApp({
     super.key,
@@ -106,10 +121,13 @@ class OtoBuzzApp extends StatelessWidget {
     required this.driverRepository,
     required this.driverAssignmentRepository,
     required this.vehicleDocumentRepository,
+    required this.fuelRepository,
+    required this.photoRepository,
     required this.calculator,
     required this.addMileageUseCase,
     required this.recordMaintenanceUseCase,
     required this.getSchedulesUseCase,
+    required this.themeService,
   });
 
   @override
@@ -137,60 +155,84 @@ class OtoBuzzApp extends StatelessWidget {
         RepositoryProvider<MileageRepository>.value(
           value: mileageRepository,
         ),
+        RepositoryProvider<FuelRepository>.value(
+          value: fuelRepository,
+        ),
+        RepositoryProvider<PhotoRepository>.value(
+          value: photoRepository,
+        ),
       ],
       child: MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (_) => VehicleBloc(
-            vehicleRepository,
-            calculator,
-            scheduleRepository,
-            documentRepository: vehicleDocumentRepository,
+        providers: [
+          BlocProvider(
+            create: (_) => ThemeCubit(themeService)..loadTheme(),
           ),
-        ),
-        BlocProvider(
-          create: (_) => MileageBloc(addMileageUseCase, mileageRepository),
-        ),
-        BlocProvider(
-          create: (_) => MaintenanceBloc(
-            getSchedulesUseCase,
-            recordMaintenanceUseCase,
-            maintenanceHistoryRepository,
+          BlocProvider(
+            create: (_) => VehicleBloc(
+              vehicleRepository,
+              calculator,
+              scheduleRepository,
+              documentRepository: vehicleDocumentRepository,
+            ),
           ),
-        ),
-        BlocProvider(
-          create: (_) => CostReportBloc(costReportRepository),
-        ),
-      ],
-      child: MaterialApp(
-        title: 'OtoBuzz',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.light,
+          BlocProvider(
+            create: (_) => MileageBloc(addMileageUseCase, mileageRepository),
           ),
-          useMaterial3: true,
-        ),
-        darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
+          BlocProvider(
+            create: (_) => MaintenanceBloc(
+              getSchedulesUseCase,
+              recordMaintenanceUseCase,
+              maintenanceHistoryRepository,
+            ),
           ),
-          useMaterial3: true,
-        ),
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+          BlocProvider(
+            create: (_) => CostReportBloc(costReportRepository),
+          ),
+          BlocProvider(
+            create: (_) => FuelBloc(fuelRepository),
+          ),
+          BlocProvider(
+            create: (_) => AnalyticsBloc(
+              mileageRepository,
+              maintenanceHistoryRepository,
+              fuelRepository,
+            ),
+          ),
         ],
-        supportedLocales: const [
-          Locale('id', 'ID'),
-          Locale('en', 'US'),
-        ],
-        locale: const Locale('id', 'ID'),
-        home: const SplashScreen(),
-      ),
+        child: BlocBuilder<ThemeCubit, ThemeMode>(
+          builder: (context, themeMode) {
+            return MaterialApp(
+              title: 'OtoBuzz',
+              debugShowCheckedModeBanner: false,
+              themeMode: themeMode,
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.blue,
+                  brightness: Brightness.light,
+                ),
+                useMaterial3: true,
+              ),
+              darkTheme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.blue,
+                  brightness: Brightness.dark,
+                ),
+                useMaterial3: true,
+              ),
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('id', 'ID'),
+                Locale('en', 'US'),
+              ],
+              locale: const Locale('id', 'ID'),
+              home: const SplashScreen(),
+            );
+          },
+        ),
       ),
     );
   }

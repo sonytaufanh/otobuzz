@@ -43,6 +43,13 @@ dependencies:
   pdf: ^3.11.0
   printing: ^5.13.0
 
+  # Charts
+  fl_chart: ^0.69.0
+
+  # Photo
+  image_picker: ^1.1.2
+  image: ^4.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

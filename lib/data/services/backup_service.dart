@@ -11,7 +11,7 @@ class BackupService {
   final DatabaseHelper _dbHelper;
 
   static const String _lastBackupKey = 'last_backup_timestamp';
-  static const int _backupVersion = 1;
+  static const int _backupVersion = 2;
 
   BackupService(this._dbHelper);
 
@@ -23,6 +23,12 @@ class BackupService {
     final mileageRecords = await db.query('mileage_records');
     final maintenanceRecords = await db.query('maintenance_records');
     final maintenanceSchedules = await db.query('maintenance_schedules');
+    final fuelRecords = await db.query('fuel_records');
+    final maintenancePhotos = await db.query('maintenance_photos');
+    final vehicleDocuments = await db.query('vehicle_documents');
+    final drivers = await db.query('drivers');
+    final driverAssignments = await db.query('driver_assignments');
+    final customIntervals = await db.query('custom_intervals');
 
     final backupData = {
       'version': _backupVersion,
@@ -32,6 +38,12 @@ class BackupService {
         'mileage_records': mileageRecords,
         'maintenance_records': maintenanceRecords,
         'maintenance_schedules': maintenanceSchedules,
+        'fuel_records': fuelRecords,
+        'maintenance_photos': maintenancePhotos,
+        'vehicle_documents': vehicleDocuments,
+        'drivers': drivers,
+        'driver_assignments': driverAssignments,
+        'custom_intervals': customIntervals,
       },
     };
 
@@ -66,6 +78,12 @@ class BackupService {
 
     await db.transaction((txn) async {
       // Clear all existing data (order matters due to foreign keys)
+      await txn.delete('maintenance_photos');
+      await txn.delete('fuel_records');
+      await txn.delete('driver_assignments');
+      await txn.delete('drivers');
+      await txn.delete('custom_intervals');
+      await txn.delete('vehicle_documents');
       await txn.delete('maintenance_schedules');
       await txn.delete('maintenance_records');
       await txn.delete('mileage_records');
@@ -85,6 +103,41 @@ class BackupService {
       for (final schedule in (data['maintenance_schedules'] as List)) {
         await txn.insert(
             'maintenance_schedules', Map<String, dynamic>.from(schedule));
+      }
+      // New tables - import if present in backup
+      if (data.containsKey('fuel_records')) {
+        for (final record in (data['fuel_records'] as List)) {
+          await txn.insert('fuel_records', Map<String, dynamic>.from(record));
+        }
+      }
+      if (data.containsKey('maintenance_photos')) {
+        for (final photo in (data['maintenance_photos'] as List)) {
+          await txn.insert(
+              'maintenance_photos', Map<String, dynamic>.from(photo));
+        }
+      }
+      if (data.containsKey('vehicle_documents')) {
+        for (final doc in (data['vehicle_documents'] as List)) {
+          await txn.insert(
+              'vehicle_documents', Map<String, dynamic>.from(doc));
+        }
+      }
+      if (data.containsKey('drivers')) {
+        for (final driver in (data['drivers'] as List)) {
+          await txn.insert('drivers', Map<String, dynamic>.from(driver));
+        }
+      }
+      if (data.containsKey('driver_assignments')) {
+        for (final assignment in (data['driver_assignments'] as List)) {
+          await txn.insert(
+              'driver_assignments', Map<String, dynamic>.from(assignment));
+        }
+      }
+      if (data.containsKey('custom_intervals')) {
+        for (final interval in (data['custom_intervals'] as List)) {
+          await txn.insert(
+              'custom_intervals', Map<String, dynamic>.from(interval));
+        }
       }
     });
   }

@@ -9,6 +9,7 @@ class Vehicle extends Equatable {
   final int year;
   final double totalMileageKm;
   final DateTime createdAt;
+  final String? photoPath;
 
   const Vehicle({
     required this.id,
@@ -18,6 +19,7 @@ class Vehicle extends Equatable {
     required this.year,
     required this.totalMileageKm,
     required this.createdAt,
+    this.photoPath,
   });
 
   Vehicle copyWith({
@@ -28,6 +30,7 @@ class Vehicle extends Equatable {
     int? year,
     double? totalMileageKm,
     DateTime? createdAt,
+    String? photoPath,
   }) {
     return Vehicle(
       id: id ?? this.id,
@@ -37,6 +40,7 @@ class Vehicle extends Equatable {
       year: year ?? this.year,
       totalMileageKm: totalMileageKm ?? this.totalMileageKm,
       createdAt: createdAt ?? this.createdAt,
+      photoPath: photoPath ?? this.photoPath,
     );
   }
 
@@ -49,6 +53,7 @@ class Vehicle extends Equatable {
       'year': year,
       'totalMileageKm': totalMileageKm,
       'createdAt': createdAt.toIso8601String(),
+      'photoPath': photoPath,
     };
   }
 
@@ -61,10 +66,11 @@ class Vehicle extends Equatable {
       year: map['year'] as int,
       totalMileageKm: (map['totalMileageKm'] as num).toDouble(),
       createdAt: DateTime.parse(map['createdAt'] as String),
+      photoPath: map['photoPath'] as String?,
     );
   }
 
   @override
   List<Object?> get props =>
-      [id, name, type, plateNumber, year, totalMileageKm, createdAt];
+      [id, name, type, plateNumber, year, totalMileageKm, createdAt, photoPath];
 }

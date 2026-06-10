@@ -72,4 +72,26 @@ class MaintenanceHistoryRepositoryImpl implements MaintenanceHistoryRepository {
     }
     return result;
   }
+
+  @override
+  Future<List<MaintenanceRecord>> getRecordsByDateRange(
+      DateTime start, DateTime end,
+      {String? vehicleId}) async {
+    final db = await _dbHelper.database;
+    String where = 'serviceDate >= ? AND serviceDate <= ?';
+    List<dynamic> args = [start.toIso8601String(), end.toIso8601String()];
+
+    if (vehicleId != null) {
+      where += ' AND vehicleId = ?';
+      args.add(vehicleId);
+    }
+
+    final maps = await db.query(
+      'maintenance_records',
+      where: where,
+      whereArgs: args,
+      orderBy: 'serviceDate DESC',
+    );
+    return maps.map((map) => MaintenanceRecord.fromMap(map)).toList();
+  }
 }

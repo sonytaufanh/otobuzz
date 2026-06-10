@@ -9,4 +9,7 @@ abstract class MaintenanceHistoryRepository {
       String vehicleId, MaintenanceType type);
   Future<Map<MaintenanceType, MaintenanceRecord>> getLastMaintenanceByType(
       String vehicleId);
+  Future<List<MaintenanceRecord>> getRecordsByDateRange(
+      DateTime start, DateTime end,
+      {String? vehicleId});
 }

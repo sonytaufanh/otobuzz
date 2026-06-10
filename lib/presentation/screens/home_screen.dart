@@ -16,10 +16,12 @@ import '../blocs/vehicle/vehicle_event.dart';
 import '../blocs/vehicle/vehicle_state.dart';
 import '../widgets/health_score_widget.dart';
 import 'add_km_screen.dart';
-import 'backup_restore_screen.dart';
+import 'analytics_screen.dart';
 import 'cost_report_screen.dart';
 import 'driver_list_screen.dart';
+import 'fuel_screen.dart';
 import 'health_score_screen.dart';
+import 'settings_screen.dart';
 import 'vehicle_detail_screen.dart';
 import 'vehicle_form_screen.dart';
 
@@ -48,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _FleetOverview(),
           _VehicleListTab(),
           _InputKmTab(),
+          FuelScreen(),
           CostReportScreen(),
         ],
       ),
@@ -71,9 +74,14 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Input KM',
           ),
           NavigationDestination(
+            icon: Icon(Icons.local_gas_station_outlined),
+            selectedIcon: Icon(Icons.local_gas_station),
+            label: 'BBM',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
             selectedIcon: Icon(Icons.receipt_long),
-            label: 'Laporan Biaya',
+            label: 'Laporan',
           ),
         ],
       ),
@@ -96,6 +104,18 @@ class _FleetOverview extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.analytics_outlined),
+            tooltip: 'Analytics',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AnalyticsScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.people),
             tooltip: 'Kelola Driver',
             onPressed: () {
@@ -110,13 +130,13 @@ class _FleetOverview extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Backup & Restore',
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Pengaturan',
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (_) => const BackupRestoreScreen()),
+                    builder: (_) => const SettingsScreen()),
               );
             },
           ),

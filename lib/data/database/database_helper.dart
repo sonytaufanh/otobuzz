@@ -24,7 +24,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -48,6 +48,50 @@ class DatabaseHelper {
     if (oldVersion < 4) {
       await _createDriverTables(db);
     }
+    if (oldVersion < 5) {
+      await _createFuelTables(db);
+      await _createMaintenancePhotosTable(db);
+      await _addVehiclePhotoColumn(db);
+    }
+  }
+
+  static Future<void> _createFuelTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE fuel_records (
+        id TEXT PRIMARY KEY,
+        vehicleId TEXT NOT NULL,
+        liters REAL NOT NULL,
+        pricePerLiter REAL NOT NULL,
+        totalCost REAL NOT NULL,
+        odometerKm REAL NOT NULL,
+        date TEXT NOT NULL,
+        stationName TEXT,
+        fuelType TEXT,
+        isFullTank INTEGER NOT NULL DEFAULT 1,
+        notes TEXT,
+        FOREIGN KEY (vehicleId) REFERENCES vehicles(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_fuel_vehicle_date ON fuel_records(vehicleId, date)');
+  }
+
+  static Future<void> _createMaintenancePhotosTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE maintenance_photos (
+        id TEXT PRIMARY KEY,
+        maintenanceRecordId TEXT NOT NULL,
+        photoPath TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (maintenanceRecordId) REFERENCES maintenance_records(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_photos_maintenance ON maintenance_photos(maintenanceRecordId)');
+  }
+
+  static Future<void> _addVehiclePhotoColumn(Database db) async {
+    await db.execute('ALTER TABLE vehicles ADD COLUMN photoPath TEXT');
   }
 
   static Future<void> _createVehicleDocumentsTable(Database db) async {
@@ -119,6 +163,7 @@ class DatabaseHelper {
         plateNumber TEXT NOT NULL,
         year INTEGER NOT NULL,
         totalMileageKm REAL NOT NULL DEFAULT 0,
+        photoPath TEXT,
         createdAt TEXT NOT NULL
       )
     ''');
@@ -181,6 +226,12 @@ class DatabaseHelper {
 
     // Driver tables
     await _createDriverTables(db);
+
+    // Fuel records table
+    await _createFuelTables(db);
+
+    // Maintenance photos table
+    await _createMaintenancePhotosTable(db);
   }
 
   Future<void> close() async {

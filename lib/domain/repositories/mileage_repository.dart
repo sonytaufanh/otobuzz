@@ -9,4 +9,7 @@ abstract class MileageRepository {
       {DateTime? from, DateTime? to});
   Future<double> getTotalMileage(String vehicleId);
   Future<double> getAverageDailyMileage(String vehicleId, {int lastDays = 30});
+  Future<List<MileageRecord>> getRecordsByDateRange(
+      DateTime start, DateTime end,
+      {String? vehicleId});
 }
