@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OtoBuzz</string>
+    <string name="widget_description">Widget cepat untuk input KM harian dan melihat status kendaraan</string>
+</resources>

@@ -140,7 +140,6 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
 
       double totalFuelCostThisMonth = 0;
       final Map<String, List<double>> monthlyFuelMap = {};
-      final Map<String, List<double>> monthlyFuelKmPerLiter = {};
 
       for (final r in fuelRecords) {
         if (_currentVehicleId != null && r.vehicleId != _currentVehicleId) {

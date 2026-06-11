@@ -45,7 +45,7 @@ class _FuelScreenState extends State<FuelScreen> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: DropdownButtonFormField<String>(
-                  value: _selectedVehicleId,
+                  initialValue: _selectedVehicleId,
                   decoration: const InputDecoration(
                     labelText: 'Kendaraan',
                     border: OutlineInputBorder(),
@@ -112,9 +112,6 @@ class _FuelScreenState extends State<FuelScreen> {
   }
 
   Widget _buildContent(List<FuelRecord> records, FuelStatistics stats) {
-    final currencyFormat =
-        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [

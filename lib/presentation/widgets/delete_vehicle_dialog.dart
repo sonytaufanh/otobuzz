@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/utils/haptics.dart';
 
 /// A confirmation dialog for deleting a vehicle.
 ///
@@ -36,7 +37,10 @@ class DeleteVehicleDialog extends StatelessWidget {
           style: FilledButton.styleFrom(
             backgroundColor: Colors.red,
           ),
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () {
+            AppHaptics.heavyImpact();
+            Navigator.of(context).pop(true);
+          },
           child: const Text('Hapus'),
         ),
       ],

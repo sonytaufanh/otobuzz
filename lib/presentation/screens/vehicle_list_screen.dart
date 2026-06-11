@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/utils/undo_service.dart';
 import '../../data/repositories/custom_interval_repository.dart';
 import '../../domain/models/vehicle.dart';
 import '../../domain/models/vehicle_type.dart';
+import '../../domain/repositories/vehicle_repository.dart';
 import '../blocs/vehicle/vehicle_bloc.dart';
 import '../blocs/vehicle/vehicle_event.dart';
 import '../blocs/vehicle/vehicle_state.dart';
@@ -148,7 +150,21 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
     final bloc = context.read<VehicleBloc>();
     final confirmed = await DeleteVehicleDialog.show(context, vehicle.name);
     if (confirmed == true) {
+      // Delete immediately
       bloc.add(DeleteVehicle(vehicle.id));
+      // Show undo snackbar
+      if (context.mounted) {
+        UndoService.showUndoSnackbar(
+          context: context,
+          message: '${vehicle.name} dihapus',
+          undoAction: () async {
+            // Restore the vehicle
+            final repo = context.read<VehicleRepository>();
+            await repo.addVehicle(vehicle);
+            bloc.add(LoadVehicles());
+          },
+        );
+      }
     }
   }
 }

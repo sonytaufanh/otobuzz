@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:printing/printing.dart';
+import '../../core/utils/semantics_labels.dart';
+import '../../data/repositories/checklist_repository.dart';
 import '../../data/repositories/custom_interval_repository.dart';
 import '../../data/repositories/driver_assignment_repository.dart';
 import '../../data/repositories/driver_repository.dart';
 import '../../data/repositories/vehicle_document_repository.dart';
 import '../../data/services/pdf_report_service.dart';
+import '../../data/services/whatsapp_service.dart';
 import '../../domain/models/models.dart';
 import '../../domain/repositories/maintenance_history_repository.dart';
 import '../../domain/repositories/maintenance_schedule_repository.dart';
@@ -14,8 +17,10 @@ import '../../domain/usecases/health_score_calculator.dart';
 import '../blocs/maintenance/maintenance_bloc.dart';
 import '../blocs/vehicle/vehicle_bloc.dart';
 import '../widgets/health_score_widget.dart';
+import '../widgets/shimmer_loading.dart';
 import 'add_km_screen.dart';
 import 'custom_interval_screen.dart';
+import 'daily_checklist_screen.dart';
 import 'driver_history_screen.dart';
 import 'health_score_screen.dart';
 import 'maintenance_dashboard_screen.dart';
@@ -280,6 +285,10 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
               },
             ),
           ),
+          const SizedBox(height: 8),
+
+          // Daily Checklist
+          _DailyChecklistCard(vehicle: widget.vehicle),
           const SizedBox(height: 24),
 
           // Driver section
@@ -292,71 +301,70 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
 
   Widget _buildHealthScoreCard(BuildContext context) {
     if (_loadingScore) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Center(child: CircularProgressIndicator()),
-        ),
-      );
+      return const ShimmerCard();
     }
 
     final result = _healthScore;
     if (result == null) return const SizedBox();
 
-    return Card(
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => HealthScoreScreen(
-                vehicle: widget.vehicle,
-                result: result,
-              ),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              HealthScoreWidget(
-                result: result,
-                size: 72,
-                compact: true,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Skor Kesehatan Kendaraan',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      result.description,
-                      style: TextStyle(
-                        color: result.color,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (result.issues.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        '${result.issues.length} masalah ditemukan',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.red,
-                            ),
-                      ),
-                    ],
-                  ],
+    return Semantics(
+      label: AppSemantics.vehicleHealthScore(
+          widget.vehicle.name, result.score),
+      child: Card(
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => HealthScoreScreen(
+                  vehicle: widget.vehicle,
+                  result: result,
                 ),
               ),
-              const Icon(Icons.chevron_right),
-            ],
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                HealthScoreWidget(
+                  result: result,
+                  size: 72,
+                  compact: true,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Skor Kesehatan Kendaraan',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        result.description,
+                        style: TextStyle(
+                          color: result.color,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (result.issues.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '${result.issues.length} masalah ditemukan',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.red,
+                              ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
           ),
         ),
       ),
@@ -433,6 +441,109 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
         ),
       ),
     ];
+  }
+}
+
+// =============================================================================
+// Daily Checklist Card Widget
+// =============================================================================
+
+class _DailyChecklistCard extends StatefulWidget {
+  final Vehicle vehicle;
+
+  const _DailyChecklistCard({required this.vehicle});
+
+  @override
+  State<_DailyChecklistCard> createState() => _DailyChecklistCardState();
+}
+
+class _DailyChecklistCardState extends State<_DailyChecklistCard> {
+  ChecklistStatus? _todayStatus;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStatus();
+  }
+
+  Future<void> _loadStatus() async {
+    final repo = context.read<ChecklistRepository>();
+    final status = await repo.getTodayStatus(widget.vehicle.id);
+    if (mounted) {
+      setState(() {
+        _todayStatus = status;
+        _loading = false;
+      });
+    }
+  }
+
+  String _statusText() {
+    if (_todayStatus == null) return 'Belum dilakukan hari ini';
+    return _todayStatus!.displayName;
+  }
+
+  Color _statusColor() {
+    if (_todayStatus == null) return Colors.orange;
+    switch (_todayStatus!) {
+      case ChecklistStatus.ok:
+        return Colors.green;
+      case ChecklistStatus.warning:
+        return Colors.orange;
+      case ChecklistStatus.critical:
+        return Colors.red;
+    }
+  }
+
+  IconData _statusIcon() {
+    if (_todayStatus == null) return Icons.pending_actions;
+    switch (_todayStatus!) {
+      case ChecklistStatus.ok:
+        return Icons.check_circle;
+      case ChecklistStatus.warning:
+        return Icons.warning;
+      case ChecklistStatus.critical:
+        return Icons.error;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = context.read<ChecklistRepository>();
+    return Card(
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: _statusColor().withValues(alpha: 0.2),
+          child: _loading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(_statusIcon(), color: _statusColor()),
+        ),
+        title: const Text('Checklist Harian'),
+        subtitle: Text(
+          _loading ? 'Memuat...' : _statusText(),
+          style: TextStyle(color: _statusColor()),
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () async {
+          final result = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DailyChecklistScreen(
+                vehicle: widget.vehicle,
+                checklistRepository: repo,
+              ),
+            ),
+          );
+          if (result == true) {
+            _loadStatus();
+          }
+        },
+      ),
+    );
   }
 }
 
@@ -550,7 +661,28 @@ class _TodayDriverCardState extends State<_TodayDriverCard> {
               : 'Belum ada driver hari ini',
         ),
         subtitle: _todayDriver?.phone != null
-            ? Text(_todayDriver!.phone!)
+            ? Row(
+                children: [
+                  Text(_todayDriver!.phone!),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () {
+                      WhatsAppService.sendMaintenanceReminder(
+                        vehicleName: widget.vehicle.name,
+                        maintenanceType: 'Info Driver',
+                        remainingInfo: 'Hubungi driver',
+                        phoneNumber: _todayDriver!.phone,
+                      );
+                    },
+                    child: const Icon(
+                      Icons.chat,
+                      color: Colors.green,
+                      size: 20,
+                      semanticLabel: 'Hubungi Driver',
+                    ),
+                  ),
+                ],
+              )
             : null,
         trailing: TextButton(
           onPressed: _changeDriver,

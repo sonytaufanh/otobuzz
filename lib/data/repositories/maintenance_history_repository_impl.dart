@@ -18,7 +18,7 @@ class MaintenanceHistoryRepositoryImpl implements MaintenanceHistoryRepository {
 
   @override
   Future<List<MaintenanceRecord>> getHistory(String vehicleId,
-      {MaintenanceType? type}) async {
+      {MaintenanceType? type, int? limit, int? offset}) async {
     final db = await _dbHelper.database;
     String where = 'vehicleId = ?';
     List<dynamic> args = [vehicleId];
@@ -33,6 +33,8 @@ class MaintenanceHistoryRepositoryImpl implements MaintenanceHistoryRepository {
       where: where,
       whereArgs: args,
       orderBy: 'serviceDate DESC',
+      limit: limit,
+      offset: offset,
     );
     return maps.map((map) => MaintenanceRecord.fromMap(map)).toList();
   }

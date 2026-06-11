@@ -50,6 +50,20 @@ dependencies:
   image_picker: ^1.1.2
   image: ^4.3.0
 
+  # HTTP client for AI service
+  http: ^1.2.0
+
+  # WhatsApp integration
+  url_launcher: ^6.3.0
+
+  # Home screen widget
+  home_widget: ^0.7.0
+
+
+
+  # Dependency Injection
+  get_it: ^8.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

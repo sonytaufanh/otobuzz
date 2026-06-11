@@ -233,7 +233,7 @@ class _FuelFormScreenState extends State<FuelFormScreen> {
 
             // Fuel type
             DropdownButtonFormField<String>(
-              value: _selectedFuelType,
+              initialValue: _selectedFuelType,
               decoration: const InputDecoration(
                 labelText: 'Jenis BBM',
                 border: OutlineInputBorder(),

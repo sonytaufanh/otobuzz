@@ -177,14 +177,14 @@ class _FilterRow extends StatelessWidget {
     return BlocBuilder<VehicleBloc, VehicleState>(
       builder: (context, vehicleState) {
         final vehicles =
-            vehicleState is VehiclesLoaded ? vehicleState.vehicles : [];
+            vehicleState is VehicleLoaded ? vehicleState.vehicles : [];
 
         return Row(
           children: [
             // Vehicle filter
             Expanded(
               child: DropdownButtonFormField<String?>(
-                value: state.selectedVehicleId,
+                initialValue: state.selectedVehicleId,
                 decoration: const InputDecoration(
                   labelText: 'Kendaraan',
                   border: OutlineInputBorder(),
@@ -209,7 +209,7 @@ class _FilterRow extends StatelessWidget {
             // Period filter
             Expanded(
               child: DropdownButtonFormField<int>(
-                value: state.periodDays,
+                initialValue: state.periodDays,
                 decoration: const InputDecoration(
                   labelText: 'Periode',
                   border: OutlineInputBorder(),
@@ -341,7 +341,7 @@ class _KmLineChart extends StatelessWidget {
             dotData: FlDotData(show: data.length <= 14),
             belowBarData: BarAreaData(
               show: true,
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             ),
           ),
         ],

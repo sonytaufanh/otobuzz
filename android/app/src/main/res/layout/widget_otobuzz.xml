@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/widget_background">
+
+    <TextView
+        android:id="@+id/widget_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OtoBuzz"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#1565C0" />
+
+    <TextView
+        android:id="@+id/widget_vehicle_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kendaraan"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/widget_total_km"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0 km"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/widget_next_maintenance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Perawatan berikutnya"
+        android:textSize="12sp"
+        android:textColor="#666666"
+        android:layout_marginTop="4dp" />
+
+    <Button
+        android:id="@+id/widget_add_km_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="+ Input KM"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#1565C0"
+        android:textColor="#FFFFFF" />
+</LinearLayout>

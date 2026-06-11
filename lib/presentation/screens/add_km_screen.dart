@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/semantics_labels.dart';
 import '../../domain/models/vehicle.dart';
 import '../../domain/models/vehicle_type.dart';
 import '../blocs/mileage/mileage_bloc.dart';
@@ -10,6 +12,7 @@ import '../blocs/mileage/mileage_state.dart';
 import '../blocs/vehicle/vehicle_bloc.dart';
 import '../blocs/vehicle/vehicle_state.dart';
 import '../widgets/duplicate_entry_dialog.dart';
+import '../widgets/gradient_button.dart';
 
 /// Key used in SharedPreferences to persist the last selected vehicle ID.
 const String _lastVehicleIdKey = 'last_selected_vehicle_id';
@@ -140,12 +143,42 @@ class _AddKmScreenState extends State<AddKmScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Catat Kilometer Harian')),
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Catat Kilometer Harian'),
+              Text(
+                'Rekam perjalanan harian Anda',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
+                    ),
+              ),
+            ],
+          ),
+        ),
         body: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             children: [
+              // Header illustration area
+              Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  gradient: AppTheme.primaryGradient,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.speed_rounded,
+                    size: 60,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Vehicle selector
               BlocBuilder<VehicleBloc, VehicleState>(
                 builder: (context, state) {
@@ -172,8 +205,7 @@ class _AddKmScreenState extends State<AddKmScreen> {
                       value: currentValue,
                       decoration: const InputDecoration(
                         labelText: 'Kendaraan',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.directions_car),
+                        prefixIcon: Icon(Icons.directions_car_outlined),
                       ),
                       items: state.vehicles.map((v) {
                         return DropdownMenuItem(
@@ -185,6 +217,7 @@ class _AddKmScreenState extends State<AddKmScreen> {
                                     ? Icons.two_wheeler
                                     : Icons.directions_car,
                                 size: 20,
+                                color: AppTheme.primaryColor,
                               ),
                               const SizedBox(width: 8),
                               Expanded(
@@ -209,46 +242,107 @@ class _AddKmScreenState extends State<AddKmScreen> {
                   return const LinearProgressIndicator();
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // KM input
-              TextFormField(
-                controller: _kmController,
-                decoration: const InputDecoration(
-                  labelText: 'Jarak tempuh hari ini (km)',
-                  hintText: 'Masukkan km yang ditempuh',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.speed),
-                  suffixText: 'km',
-                ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Masukkan jarak tempuh';
-                  }
-                  final km = double.tryParse(value);
-                  if (km == null || km < 1 || km > 2000) {
-                    return 'Masukkan jarak yang valid (1-2000 km)';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Date picker
-              InkWell(
-                onTap: _selectDate,
-                child: InputDecorator(
+              // KM input — prominent and large
+              Semantics(
+                label: AppSemantics.kmInputField,
+                child: TextFormField(
+                  controller: _kmController,
                   decoration: const InputDecoration(
-                    labelText: 'Tanggal',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.calendar_today),
+                    labelText: 'Jarak tempuh hari ini (km)',
+                    hintText: 'Masukkan km yang ditempuh',
+                    prefixIcon: Icon(Icons.speed_outlined),
+                    suffixText: 'km',
                   ),
-                  child: Text(dateFormat.format(_selectedDate)),
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Masukkan jarak tempuh';
+                    }
+                    final km = double.tryParse(value);
+                    if (km == null || km < 1 || km > 2000) {
+                      return 'Masukkan jarak yang valid (1-2000 km)';
+                    }
+                    return null;
+                  },
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+
+              // Date picker — card-like button
+              Semantics(
+                label: AppSemantics.dateSelector,
+                button: true,
+                child: InkWell(
+                  onTap: _selectDate,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                      boxShadow: AppTheme.softShadow,
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .outline
+                            .withValues(alpha: 0.15),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                            borderRadius:
+                                BorderRadius.circular(AppTheme.radiusMd),
+                          ),
+                          child: const Icon(
+                            Icons.calendar_today_rounded,
+                            color: AppTheme.primaryColor,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Tanggal',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(color: Colors.grey),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                dateFormat.format(_selectedDate),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: Colors.grey.shade400,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
 
               // Notes
               TextFormField(
@@ -256,43 +350,55 @@ class _AddKmScreenState extends State<AddKmScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Catatan (opsional)',
                   hintText: 'contoh: perjalanan ke Bandung',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.note),
+                  prefixIcon: Icon(Icons.note_outlined),
                 ),
                 maxLines: 2,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               // Current total display
               if (_selectedVehicle != null)
-                Card(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info_outline),
-                        const SizedBox(width: 8),
-                        Text(
-                            'Total km saat ini: ${_selectedVehicle!.totalMileageKm.round()} km'),
-                      ],
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.secondaryColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                    border: Border.all(
+                      color: AppTheme.secondaryColor.withValues(alpha: 0.2),
                     ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        color: AppTheme.secondaryColor,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Total km saat ini: ${_selectedVehicle!.totalMileageKm.round()} km',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.secondaryColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ],
                   ),
                 ),
               const SizedBox(height: 24),
 
+              // Premium submit button
               BlocBuilder<MileageBloc, MileageState>(
                 builder: (context, state) {
-                  return FilledButton.icon(
-                    onPressed: state is MileageLoading ? null : _submit,
-                    icon: state is MileageLoading
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.save),
-                    label: const Text('Simpan'),
+                  return Semantics(
+                    label: AppSemantics.submitKmButton,
+                    button: true,
+                    child: GradientButton(
+                      text: 'Simpan',
+                      onPressed: _submit,
+                      gradient: AppTheme.primaryGradient,
+                      icon: Icons.save_rounded,
+                      isLoading: state is MileageLoading,
+                    ),
                   );
                 },
               ),

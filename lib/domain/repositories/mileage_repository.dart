@@ -6,7 +6,7 @@ abstract class MileageRepository {
   Future<MileageRecord?> getRecordByVehicleAndDate(
       String vehicleId, DateTime date);
   Future<List<MileageRecord>> getMileageHistory(String vehicleId,
-      {DateTime? from, DateTime? to});
+      {DateTime? from, DateTime? to, int? limit, int? offset});
   Future<double> getTotalMileage(String vehicleId);
   Future<double> getAverageDailyMileage(String vehicleId, {int lastDays = 30});
   Future<List<MileageRecord>> getRecordsByDateRange(

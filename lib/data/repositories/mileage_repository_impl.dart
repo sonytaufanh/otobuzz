@@ -38,7 +38,7 @@ class MileageRepositoryImpl implements MileageRepository {
 
   @override
   Future<List<MileageRecord>> getMileageHistory(String vehicleId,
-      {DateTime? from, DateTime? to}) async {
+      {DateTime? from, DateTime? to, int? limit, int? offset}) async {
     final db = await _dbHelper.database;
     String where = 'vehicleId = ?';
     List<dynamic> args = [vehicleId];
@@ -57,6 +57,8 @@ class MileageRepositoryImpl implements MileageRepository {
       where: where,
       whereArgs: args,
       orderBy: 'date DESC',
+      limit: limit,
+      offset: offset,
     );
     return maps.map((map) => MileageRecord.fromMap(map)).toList();
   }

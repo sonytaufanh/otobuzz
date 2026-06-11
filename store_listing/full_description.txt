@@ -1,0 +1,46 @@
+OtoBuzz adalah aplikasi pengelola perawatan armada kendaraan yang dirancang khusus untuk pemilik usaha kecil dan menengah di Indonesia. Kelola motor dan mobil operasional Anda dengan mudah dan efisien.
+
+🚗 KELOLA ARMADA DENGAN MUDAH
+Daftarkan semua kendaraan armada Anda — baik motor maupun mobil. Pantau informasi lengkap setiap kendaraan termasuk plat nomor, tahun pembuatan, dan total kilometer.
+
+📊 INPUT KILOMETER HARIAN
+Catat kilometer harian setiap kendaraan dengan cepat dan mudah. Data kilometer digunakan untuk menghitung jadwal perawatan secara otomatis berdasarkan jarak tempuh aktual.
+
+🔧 JADWAL PERAWATAN OTOMATIS
+Sistem cerdas menghitung kapan kendaraan Anda perlu diservis berdasarkan kilometer dan waktu. Termasuk ganti oli, ganti ban, kampas rem, filter udara, busi, pelumas rantai, coolant, minyak rem, dan oli transmisi.
+
+🔔 PENGINGAT SERVIS
+Dapatkan notifikasi otomatis ketika kendaraan mendekati jadwal perawatan. Tidak perlu lagi mengingat-ingat kapan harus servis — OtoBuzz yang ingatkan Anda.
+
+⛽ PENCATATAN BAHAN BAKAR
+Catat setiap pengisian bahan bakar untuk memantau konsumsi BBM setiap kendaraan. Analisis efisiensi bahan bakar armada Anda dari waktu ke waktu.
+
+📋 LAPORAN BIAYA
+Lihat ringkasan biaya perawatan per kendaraan atau seluruh armada. Pahami berapa biaya operasional kendaraan Anda setiap bulan dan identifikasi kendaraan yang paling mahal perawatannya.
+
+📈 ANALITIK ARMADA
+Dashboard analitik memberikan gambaran lengkap kesehatan armada Anda. Skor kesehatan kendaraan, tren kilometer, dan statistik perawatan dalam satu tampilan.
+
+👨‍✈️ MANAJEMEN PENGEMUDI
+Tetapkan pengemudi untuk setiap kendaraan. Pantau siapa yang bertanggung jawab atas setiap unit armada.
+
+📄 DOKUMEN KENDARAAN
+Simpan informasi STNK dan pajak kendaraan. Dapatkan pengingat saat dokumen akan kedaluwarsa.
+
+💾 BACKUP & RESTORE
+Cadangkan seluruh data ke file lokal dan pulihkan kapan saja. Data Anda aman dan sepenuhnya di bawah kendali Anda.
+
+📑 EXPORT PDF
+Buat laporan dalam format PDF yang siap cetak untuk dokumentasi atau pelaporan.
+
+🔒 PRIVASI TERJAMIN
+Semua data disimpan secara lokal di perangkat Anda. Tidak ada server, tidak ada tracking, tidak ada iklan. Data Anda adalah milik Anda.
+
+OtoBuzz cocok untuk:
+• Pemilik rental motor/mobil
+• Bisnis kurir dan logistik
+• Travel dan transportasi
+• Usaha dengan kendaraan operasional
+• Siapa saja yang ingin mencatat perawatan kendaraan dengan rapi
+
+Unduh OtoBuzz sekarang dan mulai kelola armada Anda dengan lebih profesional!

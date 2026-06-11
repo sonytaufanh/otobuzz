@@ -28,7 +28,7 @@ class PhotoViewerScreen extends StatelessWidget {
           child: Image.file(
             File(photoPath),
             fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const Column(
+            errorBuilder: (_, _, _) => const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.broken_image, size: 64, color: Colors.white54),

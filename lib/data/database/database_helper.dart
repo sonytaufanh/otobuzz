@@ -22,12 +22,14 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'otobuzz.db');
 
-    return await openDatabase(
+    final db = await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
+
+    return db;
   }
 
   static Future<void> createTables(Database db) async {
@@ -52,6 +54,10 @@ class DatabaseHelper {
       await _createFuelTables(db);
       await _createMaintenancePhotosTable(db);
       await _addVehiclePhotoColumn(db);
+    }
+    if (oldVersion < 6) {
+      await _createDailyChecklistsTable(db);
+      await _createMaintenanceBudgetsTable(db);
     }
   }
 
@@ -92,6 +98,41 @@ class DatabaseHelper {
 
   static Future<void> _addVehiclePhotoColumn(Database db) async {
     await db.execute('ALTER TABLE vehicles ADD COLUMN photoPath TEXT');
+  }
+
+  static Future<void> _createDailyChecklistsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE daily_checklists (
+        id TEXT PRIMARY KEY,
+        vehicleId TEXT NOT NULL,
+        driverId TEXT,
+        date TEXT NOT NULL,
+        items TEXT NOT NULL,
+        overallStatus TEXT NOT NULL,
+        notes TEXT,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (vehicleId) REFERENCES vehicles(id) ON DELETE CASCADE,
+        UNIQUE(vehicleId, date)
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_checklists_vehicle_date ON daily_checklists(vehicleId, date)');
+  }
+
+  static Future<void> _createMaintenanceBudgetsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE maintenance_budgets (
+        id TEXT PRIMARY KEY,
+        vehicleId TEXT,
+        monthlyBudget REAL NOT NULL,
+        year INTEGER NOT NULL,
+        month INTEGER NOT NULL,
+        notes TEXT,
+        UNIQUE(vehicleId, year, month)
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_budgets_vehicle_year_month ON maintenance_budgets(vehicleId, year, month)');
   }
 
   static Future<void> _createVehicleDocumentsTable(Database db) async {
@@ -232,6 +273,12 @@ class DatabaseHelper {
 
     // Maintenance photos table
     await _createMaintenancePhotosTable(db);
+
+    // Daily checklists table
+    await _createDailyChecklistsTable(db);
+
+    // Maintenance budgets table
+    await _createMaintenanceBudgetsTable(db);
   }
 
   Future<void> close() async {

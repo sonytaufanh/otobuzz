@@ -16,6 +16,9 @@ class VehicleBloc extends Bloc<VehicleEvent, VehicleState> {
   /// Expose calculator for health score computation.
   MaintenanceCalculator get calculator => _calculator;
 
+  /// Expose vehicle repository for smart tips and other features.
+  VehicleRepository get vehicleRepository => _vehicleRepository;
+
   VehicleBloc(
     this._vehicleRepository,
     this._calculator,

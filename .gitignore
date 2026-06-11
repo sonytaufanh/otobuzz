@@ -43,3 +43,20 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Signing keys
+*.jks
+*.keystore
+android/key.properties
+android/keystore/
+
+# Environment files
+.env
+*.env
+
+# Generated files
+*.g.dart
+*.freezed.dart
+
+# Kiro internal
+.kiro/

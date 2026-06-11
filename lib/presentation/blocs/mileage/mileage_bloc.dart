@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../data/services/home_widget_service.dart';
 import '../../../domain/repositories/mileage_repository.dart';
 import '../../../domain/usecases/add_daily_mileage_usecase.dart';
 import 'mileage_event.dart';
@@ -26,6 +27,14 @@ class MileageBloc extends Bloc<MileageEvent, MileageState> {
         notes: event.notes,
         replaceDuplicate: event.replaceDuplicate,
       );
+
+      // Update home widget with latest data
+      await HomeWidgetService.updateWidget(
+        vehicleName: updatedVehicle.name,
+        totalKm: '${updatedVehicle.totalMileageKm.round()} km',
+        nextMaintenance: 'Diperbarui',
+      );
+
       emit(MileageAdded(updatedVehicle));
     } on DuplicateEntryException {
       final existing = await _mileageRepository.getRecordByVehicleAndDate(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../data/services/whatsapp_service.dart';
 import '../../domain/models/models.dart';
 import '../blocs/maintenance/maintenance_bloc.dart';
 import '../blocs/maintenance/maintenance_event.dart';
@@ -86,53 +87,89 @@ class _MaintenanceDashboardScreenState
                 child: Text('Tidak ada jadwal perawatan'),
               );
             }
-            return ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: schedules.length,
-              itemBuilder: (context, index) {
-                final schedule = schedules[index];
-                final statusColor = _getStatusColor(schedule);
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: statusColor, width: 1.5),
-                  ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: statusColor.withValues(alpha: 0.2),
-                      child: Icon(
-                        _getIconForType(schedule.type),
-                        color: statusColor,
+            // Find overdue/warning items for WhatsApp button
+            final urgentSchedules = schedules.where((s) {
+              if (s.isOverdue) return true;
+              final interval =
+                  getDefaultInterval(s.type, widget.vehicle.type);
+              return s.remainingKm <= interval.warningBeforeKm ||
+                  s.remainingDays <= interval.warningBeforeDays;
+            }).toList();
+
+            return Column(
+              children: [
+                if (urgentSchedules.isNotEmpty)
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _sendWhatsAppReminder(
+                            context, urgentSchedules.first),
+                        icon: const Icon(Icons.send, color: Colors.green),
+                        label: const Text('Kirim via WhatsApp'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.green,
+                          side: const BorderSide(color: Colors.green),
+                        ),
                       ),
                     ),
-                    title: Text(
-                      schedule.type.displayName,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text(
-                          schedule.isOverdue
-                              ? 'Sudah lewat ${schedule.remainingKm.abs().round()} km'
-                              : 'Sisa ${schedule.remainingKm.round()} km',
-                          style: TextStyle(color: statusColor),
-                        ),
-                        Text(
-                          _formatEstimatedDate(schedule),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                    trailing: schedule.isOverdue
-                        ? const Icon(Icons.warning, color: Colors.red)
-                        : null,
-                    isThreeLine: true,
                   ),
-                );
-              },
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: schedules.length,
+                    itemBuilder: (context, index) {
+                      final schedule = schedules[index];
+                      final statusColor = _getStatusColor(schedule);
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: statusColor, width: 1.5),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor:
+                                statusColor.withValues(alpha: 0.2),
+                            child: Icon(
+                              _getIconForType(schedule.type),
+                              color: statusColor,
+                            ),
+                          ),
+                          title: Text(
+                            schedule.type.displayName,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(
+                                schedule.isOverdue
+                                    ? 'Sudah lewat ${schedule.remainingKm.abs().round()} km'
+                                    : 'Sisa ${schedule.remainingKm.round()} km',
+                                style: TextStyle(color: statusColor),
+                              ),
+                              Text(
+                                _formatEstimatedDate(schedule),
+                                style:
+                                    Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                          trailing: schedule.isOverdue
+                              ? const Icon(Icons.warning, color: Colors.red)
+                              : null,
+                          isThreeLine: true,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             );
           }
           if (state is MaintenanceError) {
@@ -185,5 +222,18 @@ class _MaintenanceDashboardScreenState
       case MaintenanceType.transmission:
         return Icons.settings;
     }
+  }
+
+  void _sendWhatsAppReminder(
+      BuildContext context, MaintenanceSchedule schedule) {
+    final remainingInfo = schedule.isOverdue
+        ? 'Terlambat ${schedule.remainingKm.abs().round()} km'
+        : 'Sisa ${schedule.remainingKm.round()} km';
+
+    WhatsAppService.sendMaintenanceReminder(
+      vehicleName: widget.vehicle.name,
+      maintenanceType: schedule.type.displayName,
+      remainingInfo: remainingInfo,
+    );
   }
 }

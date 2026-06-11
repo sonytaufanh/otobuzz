@@ -12,3 +12,6 @@ export 'driver.dart';
 export 'driver_assignment.dart';
 export 'fuel_record.dart';
 export 'fuel_statistics.dart';
+export 'daily_checklist.dart';
+export 'maintenance_budget.dart';
+export 'smart_tip.dart';
