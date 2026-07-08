@@ -36,13 +36,13 @@ class NotificationService {
     for (int i = 0; i < count; i++) { await _plugin.cancel(vehicleBaseId + i); }
   }
 
-  Future<void> rescheduleAllForVehicle({required String vehicleId, required String vehicleName, required VehicleType vehicleType, required List<MaintenanceSchedule> schedules}) async {
+  Future<void> rescheduleAllForVehicle({required String vehicleId, required String vehicleName, required VehicleType vehicleType, required List<MaintenanceSchedule> schedules, TransmissionType? transmissionType}) async {
     final baseId = vehicleId.hashCode.abs() % 100000;
     await cancelAllForVehicle(baseId, MaintenanceType.values.length);
     for (int i = 0; i < schedules.length; i++) {
       final schedule = schedules[i];
       if (!schedule.isOverdue) {
-        final interval = getDefaultInterval(schedule.type, vehicleType);
+        final interval = getDefaultInterval(schedule.type, vehicleType, transmissionType: transmissionType);
         if (schedule.remainingKm <= interval.warningBeforeKm || schedule.remainingDays <= interval.warningBeforeDays) {
           await scheduleMaintenanceReminder(notificationId: baseId + i, vehicleName: vehicleName, vehicleType: vehicleType, maintenanceType: schedule.type, schedule: schedule);
         }
@@ -62,6 +62,44 @@ class NotificationService {
     if (days < 30) return '${(days / 7).round()} minggu';
     if (days < 365) return '${(days / 30).round()} bulan';
     return '${(days / 365).round()} tahun';
+  }
+
+  Future<void> showImmediateMaintenanceAlert({
+    required int notificationId,
+    required String vehicleName,
+    required VehicleType vehicleType,
+    required MaintenanceType maintenanceType,
+    required bool isOverdue,
+    required double remainingKm,
+  }) async {
+    final prefix = vehicleType == VehicleType.motorcycle ? 'Motor' : 'Mobil';
+    final action = maintenanceType.actionText;
+
+    String title;
+    String body;
+    if (isOverdue) {
+      title = '⚠️ Perawatan Terlambat!';
+      body = '$prefix $vehicleName - $action sudah terlambat! Segera servis.';
+    } else {
+      title = '🔔 Perawatan Segera';
+      body = '$prefix $vehicleName perlu $action dalam ${remainingKm.round()} km lagi.';
+    }
+
+    await _plugin.show(
+      notificationId,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'maintenance_alert_channel',
+          'Peringatan Perawatan',
+          channelDescription: 'Notifikasi peringatan perawatan mendesak',
+          importance: Importance.max,
+          priority: Priority.max,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+    );
   }
 
   Future<void> showDocumentReminder({required int notificationId, required String message}) async {

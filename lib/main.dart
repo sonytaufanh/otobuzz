@@ -9,6 +9,7 @@ import 'data/repositories/checklist_repository.dart';
 import 'data/repositories/custom_interval_repository.dart';
 import 'data/repositories/driver_assignment_repository.dart';
 import 'data/repositories/driver_repository.dart';
+import 'data/repositories/expense_repository.dart';
 import 'data/repositories/fuel_repository.dart';
 import 'data/repositories/photo_repository.dart';
 import 'data/repositories/vehicle_document_repository.dart';
@@ -20,7 +21,9 @@ import 'presentation/blocs/maintenance/maintenance_bloc.dart';
 import 'presentation/blocs/mileage/mileage_bloc.dart';
 import 'presentation/blocs/theme/theme_cubit.dart';
 import 'presentation/blocs/vehicle/vehicle_bloc.dart';
-import 'presentation/screens/splash_screen.dart';
+import 'presentation/screens/demo_home.dart';
+// ignore: unused_import
+import 'presentation/screens/splash_screen.dart'; // TODO: revert when demo is done
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,6 +77,9 @@ class OtoBuzzApp extends StatelessWidget {
         RepositoryProvider<BudgetRepository>.value(
           value: sl<BudgetRepository>(),
         ),
+        RepositoryProvider<ExpenseRepository>.value(
+          value: sl<ExpenseRepository>(),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -117,7 +123,7 @@ class OtoBuzzApp extends StatelessWidget {
                 Locale('en', 'US'),
               ],
               locale: const Locale('id', 'ID'),
-              home: const SplashScreen(),
+              home: const DemoHomeScreen(), // TODO: revert to SplashScreen()
             );
           },
         ),

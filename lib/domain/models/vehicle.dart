@@ -1,10 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'transmission_type.dart';
 import 'vehicle_type.dart';
 
 class Vehicle extends Equatable {
   final String id;
   final String name;
   final VehicleType type;
+  final TransmissionType? transmissionType;
   final String plateNumber;
   final int year;
   final double totalMileageKm;
@@ -15,6 +17,7 @@ class Vehicle extends Equatable {
     required this.id,
     required this.name,
     required this.type,
+    this.transmissionType,
     required this.plateNumber,
     required this.year,
     required this.totalMileageKm,
@@ -26,6 +29,7 @@ class Vehicle extends Equatable {
     String? id,
     String? name,
     VehicleType? type,
+    TransmissionType? transmissionType,
     String? plateNumber,
     int? year,
     double? totalMileageKm,
@@ -36,6 +40,7 @@ class Vehicle extends Equatable {
       id: id ?? this.id,
       name: name ?? this.name,
       type: type ?? this.type,
+      transmissionType: transmissionType ?? this.transmissionType,
       plateNumber: plateNumber ?? this.plateNumber,
       year: year ?? this.year,
       totalMileageKm: totalMileageKm ?? this.totalMileageKm,
@@ -49,6 +54,7 @@ class Vehicle extends Equatable {
       'id': id,
       'name': name,
       'type': type.index,
+      'transmissionType': transmissionType?.index,
       'plateNumber': plateNumber,
       'year': year,
       'totalMileageKm': totalMileageKm,
@@ -62,6 +68,9 @@ class Vehicle extends Equatable {
       id: map['id'] as String,
       name: map['name'] as String,
       type: VehicleType.values[map['type'] as int],
+      transmissionType: map['transmissionType'] != null
+          ? TransmissionType.values[map['transmissionType'] as int]
+          : null,
       plateNumber: map['plateNumber'] as String,
       year: map['year'] as int,
       totalMileageKm: (map['totalMileageKm'] as num).toDouble(),
@@ -71,6 +80,15 @@ class Vehicle extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [id, name, type, plateNumber, year, totalMileageKm, createdAt, photoPath];
+  List<Object?> get props => [
+        id,
+        name,
+        type,
+        transmissionType,
+        plateNumber,
+        year,
+        totalMileageKm,
+        createdAt,
+        photoPath,
+      ];
 }

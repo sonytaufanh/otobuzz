@@ -18,6 +18,7 @@ class MaintenanceBloc extends Bloc<MaintenanceEvent, MaintenanceState> {
     on<LoadSchedules>(_onLoadSchedules);
     on<RecordMaintenance>(_onRecordMaintenance);
     on<LoadMaintenanceHistory>(_onLoadHistory);
+    on<UpdateMaintenanceRecord>(_onUpdateMaintenanceRecord);
   }
 
   Future<void> _onLoadSchedules(
@@ -43,6 +44,8 @@ class MaintenanceBloc extends Bloc<MaintenanceEvent, MaintenanceState> {
         cost: event.cost,
         notes: event.notes,
         workshopName: event.workshopName,
+        workshopRating: event.workshopRating,
+        workshopReview: event.workshopReview,
       );
       emit(MaintenanceRecorded('Perawatan berhasil dicatat'));
       add(LoadSchedules(event.vehicleId));
@@ -64,6 +67,15 @@ class MaintenanceBloc extends Bloc<MaintenanceEvent, MaintenanceState> {
       emit(MaintenanceHistoryLoaded(records: records, totalCost: totalCost));
     } catch (e) {
       emit(MaintenanceError('Gagal memuat riwayat perawatan'));
+    }
+  }
+
+  Future<void> _onUpdateMaintenanceRecord(
+      UpdateMaintenanceRecord event, Emitter<MaintenanceState> emit) async {
+    try {
+      await _historyRepository.updateRecord(event.record);
+    } catch (e) {
+      emit(MaintenanceError(e.toString()));
     }
   }
 }

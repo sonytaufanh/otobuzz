@@ -28,6 +28,8 @@ class RecordMaintenanceCompletedUseCase {
     double? cost,
     String? notes,
     String? workshopName,
+    int? workshopRating,
+    String? workshopReview,
   }) async {
     // Validate
     if (serviceDate.isAfter(DateTime.now())) {
@@ -54,6 +56,8 @@ class RecordMaintenanceCompletedUseCase {
       cost: cost,
       notes: notes,
       workshopName: workshopName,
+      workshopRating: workshopRating,
+      workshopReview: workshopReview,
     );
     await _maintenanceRepository.addMaintenanceRecord(record);
 
@@ -67,6 +71,7 @@ class RecordMaintenanceCompletedUseCase {
       vehicleName: vehicle.name,
       vehicleType: vehicle.type,
       schedules: schedules,
+      transmissionType: vehicle.transmissionType,
     );
   }
 }

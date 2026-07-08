@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/services/home_widget_service.dart';
 import '../../../domain/repositories/mileage_repository.dart';
+import '../../../domain/repositories/maintenance_schedule_repository.dart';
+import '../../../domain/repositories/vehicle_repository.dart';
 import '../../../domain/usecases/add_daily_mileage_usecase.dart';
 import 'mileage_event.dart';
 import 'mileage_state.dart';
@@ -8,9 +10,15 @@ import 'mileage_state.dart';
 class MileageBloc extends Bloc<MileageEvent, MileageState> {
   final AddDailyMileageUseCase _addMileageUseCase;
   final MileageRepository _mileageRepository;
+  final VehicleRepository _vehicleRepository;
+  final MaintenanceScheduleRepository _scheduleRepository;
 
-  MileageBloc(this._addMileageUseCase, this._mileageRepository)
-      : super(MileageInitial()) {
+  MileageBloc(
+    this._addMileageUseCase,
+    this._mileageRepository,
+    this._vehicleRepository,
+    this._scheduleRepository,
+  ) : super(MileageInitial()) {
     on<AddMileage>(_onAddMileage);
     on<LoadMileageHistory>(_onLoadHistory);
     on<CheckDuplicateEntry>(_onCheckDuplicate);
@@ -28,11 +36,11 @@ class MileageBloc extends Bloc<MileageEvent, MileageState> {
         replaceDuplicate: event.replaceDuplicate,
       );
 
-      // Update home widget with latest data
-      await HomeWidgetService.updateWidget(
-        vehicleName: updatedVehicle.name,
-        totalKm: '${updatedVehicle.totalMileageKm.round()} km',
-        nextMaintenance: 'Diperbarui',
+      // Update home widget with full schedule data
+      await HomeWidgetService.updateWidgetFull(
+        vehicleId: event.vehicleId,
+        vehicleRepository: _vehicleRepository,
+        scheduleRepository: _scheduleRepository,
       );
 
       emit(MileageAdded(updatedVehicle));

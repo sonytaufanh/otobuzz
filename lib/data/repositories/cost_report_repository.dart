@@ -6,12 +6,16 @@ class MonthlyCostSummary {
   final int month;
   final int year;
   final double totalCost;
+  final double expenseCost;
 
   const MonthlyCostSummary({
     required this.month,
     required this.year,
     required this.totalCost,
+    this.expenseCost = 0,
   });
+
+  double get grandTotal => totalCost + expenseCost;
 }
 
 /// Model for cost grouped by maintenance type
@@ -156,5 +160,32 @@ class CostReportRepository {
 
     if (results.isEmpty || results.first['totalCost'] == null) return 0;
     return (results.first['totalCost'] as num).toDouble();
+  }
+
+  /// Returns the total cost including expenses within a date range.
+  Future<double> getTotalCostWithExpenses(
+      String? vehicleId, DateTime from, DateTime to) async {
+    final maintenanceCost = await getTotalCost(vehicleId, from, to);
+
+    final db = await _dbHelper.database;
+    final whereClause = vehicleId != null
+        ? 'WHERE vehicleId = ? AND date >= ? AND date <= ?'
+        : 'WHERE date >= ? AND date <= ?';
+    final args = vehicleId != null
+        ? [vehicleId, from.toIso8601String(), to.toIso8601String()]
+        : [from.toIso8601String(), to.toIso8601String()];
+
+    final results = await db.rawQuery('''
+      SELECT SUM(amount) as totalExpense
+      FROM expense_records
+      $whereClause
+    ''', args);
+
+    double expenseCost = 0;
+    if (results.isNotEmpty && results.first['totalExpense'] != null) {
+      expenseCost = (results.first['totalExpense'] as num).toDouble();
+    }
+
+    return maintenanceCost + expenseCost;
   }
 }

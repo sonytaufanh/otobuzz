@@ -17,6 +17,17 @@ class MaintenanceHistoryRepositoryImpl implements MaintenanceHistoryRepository {
   }
 
   @override
+  Future<void> updateRecord(MaintenanceRecord record) async {
+    final db = await _dbHelper.database;
+    await db.update(
+      'maintenance_records',
+      record.toMap(),
+      where: 'id = ?',
+      whereArgs: [record.id],
+    );
+  }
+
+  @override
   Future<List<MaintenanceRecord>> getHistory(String vehicleId,
       {MaintenanceType? type, int? limit, int? offset}) async {
     final db = await _dbHelper.database;

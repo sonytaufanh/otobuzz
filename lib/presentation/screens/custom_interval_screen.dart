@@ -39,7 +39,9 @@ class _CustomIntervalScreenState extends State<CustomIntervalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final applicableTypes = getApplicableTypes(widget.vehicle.type);
+    final applicableTypes =
+        getApplicableTypes(widget.vehicle.type,
+            transmissionType: widget.vehicle.transmissionType);
 
     return Scaffold(
       appBar: AppBar(
@@ -55,8 +57,9 @@ class _CustomIntervalScreenState extends State<CustomIntervalScreen> {
                 final customInterval = _customIntervals
                     .where((ci) => ci.type == type)
                     .firstOrNull;
-                final defaultInterval =
-                    getDefaultInterval(type, widget.vehicle.type);
+                final defaultInterval = getDefaultInterval(type,
+                    widget.vehicle.type,
+                    transmissionType: widget.vehicle.transmissionType);
                 final isCustom = customInterval != null;
 
                 final kmInterval = isCustom
@@ -67,7 +70,7 @@ class _CustomIntervalScreenState extends State<CustomIntervalScreen> {
                     : defaultInterval.monthsInterval;
 
                 return Card(
-                  child: ListTile(
+                  child: ExpansionTile(
                     title: Row(
                       children: [
                         Expanded(child: Text(type.displayName)),
@@ -105,8 +108,34 @@ class _CustomIntervalScreenState extends State<CustomIntervalScreen> {
                     subtitle: Text(
                       '${kmInterval.round()} km / $monthsInterval bulan',
                     ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _openEditDialog(type, customInterval),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            type.description,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          onPressed: () =>
+                              _openEditDialog(type, customInterval),
+                          icon: const Icon(Icons.edit, size: 18),
+                          label: const Text('Ubah Interval'),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -116,7 +145,8 @@ class _CustomIntervalScreenState extends State<CustomIntervalScreen> {
 
   Future<void> _openEditDialog(
       MaintenanceType type, CustomInterval? existing) async {
-    final defaultInterval = getDefaultInterval(type, widget.vehicle.type);
+    final defaultInterval = getDefaultInterval(type, widget.vehicle.type,
+        transmissionType: widget.vehicle.transmissionType);
 
     final kmController = TextEditingController(
       text: (existing?.kmInterval ?? defaultInterval.kmInterval)
@@ -147,7 +177,41 @@ class _CustomIntervalScreenState extends State<CustomIntervalScreen> {
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.lightbulb_outline,
+                          size: 20,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          type.description,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: kmController,
                   decoration: const InputDecoration(

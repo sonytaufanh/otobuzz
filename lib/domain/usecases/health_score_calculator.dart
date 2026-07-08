@@ -93,7 +93,8 @@ class HealthScoreCalculator {
 
     // Get maintenance intervals for warning zone calculation
     final applicableTypes =
-        _maintenanceCalculator.getApplicableMaintenanceTypes(vehicle.type);
+        _maintenanceCalculator.getApplicableMaintenanceTypes(vehicle.type,
+            transmissionType: vehicle.transmissionType);
 
     // --- Calculate overdue items ---
     // Only consider schedules for applicable maintenance types
@@ -118,7 +119,8 @@ class HealthScoreCalculator {
     for (final schedule in relevantSchedules) {
       if (!schedule.isOverdue) {
         // Find the interval for this type
-        final interval = _findInterval(schedule.type, vehicle.type);
+        final interval = _findInterval(schedule.type, vehicle.type,
+            transmissionType: vehicle.transmissionType);
         if (interval != null) {
           final halfInterval = interval.kmInterval / 2;
           if (schedule.remainingKm > halfInterval) {
@@ -303,10 +305,25 @@ class HealthScoreCalculator {
   // --- Helper methods ---
 
   MaintenanceInterval? _findInterval(
-      MaintenanceType type, VehicleType vehicleType) {
+      MaintenanceType type, VehicleType vehicleType,
+      {TransmissionType? transmissionType}) {
     try {
+      // Try transmission-specific first
+      if (transmissionType != null) {
+        final match = defaultIntervals.where(
+          (i) =>
+              i.type == type &&
+              i.vehicleType == vehicleType &&
+              i.transmissionType == transmissionType,
+        );
+        if (match.isNotEmpty) return match.first;
+      }
+      // Fall back to generic
       return defaultIntervals.firstWhere(
-        (i) => i.type == type && i.vehicleType == vehicleType,
+        (i) =>
+            i.type == type &&
+            i.vehicleType == vehicleType &&
+            i.transmissionType == null,
       );
     } catch (_) {
       return null;
@@ -338,48 +355,10 @@ class HealthScoreCalculator {
   }
 
   String _getTypeLabel(MaintenanceType type) {
-    switch (type) {
-      case MaintenanceType.oilChange:
-        return 'Ganti oli';
-      case MaintenanceType.tireReplacement:
-        return 'Ganti ban';
-      case MaintenanceType.brakePads:
-        return 'Ganti kampas rem';
-      case MaintenanceType.airFilter:
-        return 'Ganti filter udara';
-      case MaintenanceType.sparkPlug:
-        return 'Ganti busi';
-      case MaintenanceType.chainLube:
-        return 'Pelumas rantai';
-      case MaintenanceType.coolant:
-        return 'Ganti coolant';
-      case MaintenanceType.brakeFluid:
-        return 'Ganti minyak rem';
-      case MaintenanceType.transmission:
-        return 'Ganti oli transmisi';
-    }
+    return type.displayName;
   }
 
   String _getActionLabel(MaintenanceType type) {
-    switch (type) {
-      case MaintenanceType.oilChange:
-        return 'ganti oli';
-      case MaintenanceType.tireReplacement:
-        return 'ganti ban';
-      case MaintenanceType.brakePads:
-        return 'ganti kampas rem';
-      case MaintenanceType.airFilter:
-        return 'ganti filter udara';
-      case MaintenanceType.sparkPlug:
-        return 'ganti busi';
-      case MaintenanceType.chainLube:
-        return 'lumasi rantai';
-      case MaintenanceType.coolant:
-        return 'ganti coolant';
-      case MaintenanceType.brakeFluid:
-        return 'ganti minyak rem';
-      case MaintenanceType.transmission:
-        return 'ganti oli transmisi';
-    }
+    return type.actionText;
   }
 }

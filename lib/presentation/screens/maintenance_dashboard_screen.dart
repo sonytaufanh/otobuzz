@@ -32,7 +32,7 @@ class _MaintenanceDashboardScreenState
       return Colors.red;
     }
     // Check if within warning threshold
-    final interval = getDefaultInterval(schedule.type, widget.vehicle.type);
+    final interval = getDefaultInterval(schedule.type, widget.vehicle.type, transmissionType: widget.vehicle.transmissionType);
     if (schedule.remainingKm <= interval.warningBeforeKm ||
         schedule.remainingDays <= interval.warningBeforeDays) {
       return Colors.amber;
@@ -91,7 +91,7 @@ class _MaintenanceDashboardScreenState
             final urgentSchedules = schedules.where((s) {
               if (s.isOverdue) return true;
               final interval =
-                  getDefaultInterval(s.type, widget.vehicle.type);
+                  getDefaultInterval(s.type, widget.vehicle.type, transmissionType: widget.vehicle.transmissionType);
               return s.remainingKm <= interval.warningBeforeKm ||
                   s.remainingDays <= interval.warningBeforeDays;
             }).toList();
@@ -129,7 +129,8 @@ class _MaintenanceDashboardScreenState
                           borderRadius: BorderRadius.circular(12),
                           side: BorderSide(color: statusColor, width: 1.5),
                         ),
-                        child: ListTile(
+                        child: ExpansionTile(
+                          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
                           leading: CircleAvatar(
                             backgroundColor:
                                 statusColor.withValues(alpha: 0.2),
@@ -163,7 +164,34 @@ class _MaintenanceDashboardScreenState
                           trailing: schedule.isOverdue
                               ? const Icon(Icons.warning, color: Colors.red)
                               : null,
-                          isThreeLine: true,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.lightbulb_outline,
+                                      size: 18,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      schedule.type.description,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -215,12 +243,42 @@ class _MaintenanceDashboardScreenState
         return Icons.bolt;
       case MaintenanceType.chainLube:
         return Icons.link;
+      case MaintenanceType.chainAdjust:
+        return Icons.tune;
       case MaintenanceType.coolant:
         return Icons.water_drop;
       case MaintenanceType.brakeFluid:
         return Icons.water;
+      case MaintenanceType.brakeFluidFlush:
+        return Icons.cleaning_services;
       case MaintenanceType.transmission:
         return Icons.settings;
+      case MaintenanceType.finalDriveOil:
+        return Icons.settings_suggest;
+      case MaintenanceType.cvtRoller:
+        return Icons.circle;
+      case MaintenanceType.cvtVBelt:
+        return Icons.timeline;
+      case MaintenanceType.cvtClutchShoe:
+        return Icons.do_not_step;
+      case MaintenanceType.cvtDrivePlate:
+        return Icons.album;
+      case MaintenanceType.cvtSpring:
+        return Icons.compress;
+      case MaintenanceType.clutchPlate:
+        return Icons.do_not_step;
+      case MaintenanceType.valveAdjust:
+        return Icons.tune;
+      case MaintenanceType.throttleBodyClean:
+        return Icons.cleaning_services;
+      case MaintenanceType.injectorClean:
+        return Icons.cleaning_services;
+      case MaintenanceType.battery:
+        return Icons.battery_charging_full;
+      case MaintenanceType.wheelBearing:
+        return Icons.settings;
+      case MaintenanceType.suspension:
+        return Icons.airline_seat_recline_normal;
     }
   }
 

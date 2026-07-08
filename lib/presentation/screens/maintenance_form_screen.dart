@@ -21,8 +21,10 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
   final _costController = TextEditingController();
   final _notesController = TextEditingController();
   final _workshopController = TextEditingController();
+  final _workshopReviewController = TextEditingController();
   MaintenanceType? _selectedType;
   DateTime _serviceDate = DateTime.now();
+  int _workshopRating = 0;
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
     _costController.dispose();
     _notesController.dispose();
     _workshopController.dispose();
+    _workshopReviewController.dispose();
     super.dispose();
   }
 
@@ -74,13 +77,18 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
           workshopName: _workshopController.text.isNotEmpty
               ? _workshopController.text
               : null,
+          workshopRating: _workshopRating > 0 ? _workshopRating : null,
+          workshopReview: _workshopReviewController.text.isNotEmpty
+              ? _workshopReviewController.text
+              : null,
         ));
   }
 
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM/yyyy');
-    final applicableTypes = getApplicableTypes(widget.vehicle.type);
+    final applicableTypes = getApplicableTypes(widget.vehicle.type,
+        transmissionType: widget.vehicle.transmissionType);
 
     return BlocListener<MaintenanceBloc, MaintenanceState>(
       listener: (context, state) {
@@ -134,6 +142,39 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
                 onChanged: (type) => setState(() => _selectedType = type),
                 validator: (v) => v == null ? 'Pilih jenis perawatan' : null,
               ),
+              if (_selectedType != null) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.lightbulb_outline,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _selectedType!.description,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
 
               // Mileage at service
@@ -197,8 +238,44 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.store),
                 ),
+                onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 16),
+
+              // Workshop rating (optional, only if workshop filled)
+              if (_workshopController.text.isNotEmpty) ...[
+                Text('Rating Bengkel (opsional)',
+                    style: Theme.of(context).textTheme.bodyMedium),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    ...List.generate(5, (i) => IconButton(
+                      icon: Icon(
+                        i < _workshopRating ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 32,
+                      ),
+                      onPressed: () => setState(() =>
+                          _workshopRating = i + 1 == _workshopRating ? 0 : i + 1),
+                    )),
+                    if (_workshopRating > 0)
+                      Text('$_workshopRating/5',
+                          style: Theme.of(context).textTheme.bodySmall),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _workshopReviewController,
+                  decoration: const InputDecoration(
+                    labelText: 'Review Bengkel (opsional)',
+                    hintText: 'Pelayanan cepat, harga wajar',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.rate_review),
+                  ),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // Notes (optional)
               TextFormField(

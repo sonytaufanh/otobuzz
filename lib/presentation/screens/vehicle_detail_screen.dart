@@ -6,6 +6,7 @@ import '../../data/repositories/checklist_repository.dart';
 import '../../data/repositories/custom_interval_repository.dart';
 import '../../data/repositories/driver_assignment_repository.dart';
 import '../../data/repositories/driver_repository.dart';
+import '../../data/repositories/expense_repository.dart';
 import '../../data/repositories/vehicle_document_repository.dart';
 import '../../data/services/pdf_report_service.dart';
 import '../../data/services/whatsapp_service.dart';
@@ -22,11 +23,17 @@ import 'add_km_screen.dart';
 import 'custom_interval_screen.dart';
 import 'daily_checklist_screen.dart';
 import 'driver_history_screen.dart';
+import 'expense_screen.dart';
 import 'health_score_screen.dart';
 import 'maintenance_dashboard_screen.dart';
 import 'maintenance_history_screen.dart';
 import 'mileage_history_screen.dart';
 import 'vehicle_documents_screen.dart';
+import 'vehicle_form_screen.dart';
+import 'trouble_log_screen.dart';
+import 'annual_km_target_screen.dart';
+import 'maintenance_cost_prediction_screen.dart';
+import 'trip_checklist_screen.dart';
 
 class VehicleDetailScreen extends StatefulWidget {
   final Vehicle vehicle;
@@ -97,19 +104,130 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Vehicle info card
-          Card(
-            child: ListTile(
-              leading: CircleAvatar(
-                child: Icon(
-                  widget.vehicle.type == VehicleType.motorcycle
-                      ? Icons.two_wheeler
-                      : Icons.directions_car,
+          // Migration prompt — kendaraan lama tanpa transmissionType
+          if (widget.vehicle.transmissionType == null)
+            Card(
+              color: Theme.of(context).colorScheme.errorContainer,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded,
+                        color: Theme.of(context).colorScheme.error),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Lengkapi Data Transmisi',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onErrorContainer,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Pilih jenis transmisi agar jadwal perawatan CVT, rantai, dan kopling bisa ditampilkan.',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onErrorContainer,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () async {
+                        final bloc = context.read<VehicleBloc>();
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider.value(
+                              value: bloc,
+                              child: VehicleFormScreen(
+                                  vehicle: widget.vehicle),
+                            ),
+                          ),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor:
+                            Theme.of(context).colorScheme.error,
+                      ),
+                      child: const Text('Atur'),
+                    ),
+                  ],
                 ),
               ),
-              title: Text(widget.vehicle.name),
-              subtitle: Text(
-                '${widget.vehicle.plateNumber} • ${widget.vehicle.year}',
+            ),
+          if (widget.vehicle.transmissionType == null)
+            const SizedBox(height: 8),
+
+          // Vehicle info card
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    child: Icon(
+                      widget.vehicle.type == VehicleType.motorcycle
+                          ? Icons.two_wheeler
+                          : Icons.directions_car,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.vehicle.name,
+                            style: Theme.of(context).textTheme.titleMedium),
+                        Text(
+                          '${widget.vehicle.plateNumber} • ${widget.vehicle.year}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        if (widget.vehicle.transmissionType != null) ...[
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              widget.vehicle.transmissionType!.displayName,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -287,8 +405,121 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
           ),
           const SizedBox(height: 8),
 
+          // Pengeluaran Lain
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                child: Icon(Icons.receipt_long),
+              ),
+              title: const Text('Pengeluaran Lain'),
+              subtitle: const Text('Tol, parkir, cuci, asuransi, dll'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ExpenseScreen(
+                      vehicle: widget.vehicle,
+                      expenseRepository: context.read<ExpenseRepository>(),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+
           // Daily Checklist
           _DailyChecklistCard(vehicle: widget.vehicle),
+          const SizedBox(height: 8),
+
+          // Catatan Kerusakan
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.orange,
+                child: Icon(Icons.warning_amber, color: Colors.white),
+              ),
+              title: const Text('Catatan Kerusakan'),
+              subtitle: const Text('Catat gejala aneh sebelum ke bengkel'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TroubleLogScreen(vehicle: widget.vehicle),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Target KM Tahunan
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.blue,
+                child: Icon(Icons.flag, color: Colors.white),
+              ),
+              title: const Text('Target KM Tahunan'),
+              subtitle: const Text('Set target dan lihat progress'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AnnualKmTargetScreen(vehicle: widget.vehicle),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Prediksi Biaya Perawatan
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.green,
+                child: Icon(Icons.account_balance_wallet, color: Colors.white),
+              ),
+              title: const Text('Prediksi Biaya Perawatan'),
+              subtitle: const Text('Estimasi biaya 30-90 hari ke depan'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MaintenanceCostPredictionScreen(
+                        vehicle: widget.vehicle),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Mode Perjalanan Jauh
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.deepOrange,
+                child: Icon(Icons.directions_car, color: Colors.white),
+              ),
+              title: const Text('Mode Perjalanan Jauh'),
+              subtitle: const Text('Cek kendaraan sebelum mudik/touring'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TripChecklistScreen(vehicle: widget.vehicle),
+                  ),
+                );
+              },
+            ),
+          ),
           const SizedBox(height: 24),
 
           // Driver section

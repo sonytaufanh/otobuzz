@@ -3,50 +3,128 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:padding="12dp"
     android:background="@drawable/widget_background">
 
-    <TextView
-        android:id="@+id/widget_title"
+    <!-- Header row: title + vehicle name -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="OtoBuzz"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="#1565C0" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/widget_vehicle_name"
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🏍️ OtoBuzz"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#1565C0" />
+
+        <TextView
+            android:id="@+id/widget_vehicle_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kendaraan"
+            android:textSize="11sp"
+            android:textColor="#666666"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Kendaraan"
-        android:textSize="14sp"
-        android:layout_marginTop="4dp" />
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp" />
 
+    <!-- Total KM -->
     <TextView
         android:id="@+id/widget_total_km"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="0 km"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold"
-        android:layout_marginTop="4dp" />
+        android:textColor="#212121" />
 
-    <TextView
-        android:id="@+id/widget_next_maintenance"
+    <!-- Oil remaining -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Perawatan berikutnya"
-        android:textSize="12sp"
-        android:textColor="#666666"
-        android:layout_marginTop="4dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🛢️ Oli: "
+            android:textSize="12sp"
+            android:textColor="#555555" />
+
+        <TextView
+            android:id="@+id/widget_oil_km_remaining"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#E65100" />
+    </LinearLayout>
+
+    <!-- Next maintenance -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="2dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔧 "
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/widget_next_maintenance_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#333333" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" · "
+            android:textSize="12sp"
+            android:textColor="#999999" />
+
+        <TextView
+            android:id="@+id/widget_next_maintenance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Tidak ada jadwal"
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <!-- Add KM button -->
     <Button
         android:id="@+id/widget_add_km_button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:text="+ Input KM"
         android:layout_marginTop="8dp"
         android:backgroundTint="#1565C0"
-        android:textColor="#FFFFFF" />
+        android:textColor="#FFFFFF"
+        android:textSize="12sp" />
 </LinearLayout>

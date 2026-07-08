@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/validators.dart';
 import '../../domain/models/vehicle.dart';
+import '../../domain/models/transmission_type.dart';
 import '../../domain/models/vehicle_type.dart';
 import '../blocs/vehicle/vehicle_bloc.dart';
 import '../blocs/vehicle/vehicle_event.dart';
@@ -25,6 +26,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   final _plateController = TextEditingController();
   final _yearController = TextEditingController();
   VehicleType _selectedType = VehicleType.motorcycle;
+  TransmissionType? _selectedTransmission;
 
   bool get isEditing => widget.vehicle != null;
 
@@ -36,6 +38,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
       _plateController.text = widget.vehicle!.plateNumber;
       _yearController.text = widget.vehicle!.year.toString();
       _selectedType = widget.vehicle!.type;
+      _selectedTransmission = widget.vehicle!.transmissionType;
     }
   }
 
@@ -51,13 +54,30 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     return validatePlateNumber(value);
   }
 
+  /// Returns applicable transmission options for the selected vehicle type.
+  List<TransmissionType> get _transmissionOptions {
+    switch (_selectedType) {
+      case VehicleType.motorcycle:
+        return TransmissionType.values;
+      case VehicleType.car:
+        return [TransmissionType.manual, TransmissionType.matic];
+    }
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
+    if (!isEditing && _selectedTransmission == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih jenis transmisi')),
+      );
+      return;
+    }
 
     final vehicle = Vehicle(
       id: widget.vehicle?.id ?? const Uuid().v4(),
       name: _nameController.text.trim(),
       type: _selectedType,
+      transmissionType: _selectedTransmission,
       plateNumber: _plateController.text.trim().toUpperCase(),
       year: int.parse(_yearController.text),
       totalMileageKm: widget.vehicle?.totalMileageKm ?? 0,
@@ -174,7 +194,10 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                     ],
                     selected: {_selectedType},
                     onSelectionChanged: (set) {
-                      setState(() => _selectedType = set.first);
+                      setState(() {
+                        _selectedType = set.first;
+                        _selectedTransmission = null;
+                      });
                     },
                     style: ButtonStyle(
                       backgroundColor: WidgetStateProperty.resolveWith((states) {
@@ -184,6 +207,37 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                         return Colors.transparent;
                       }),
                     ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Transmission type selector
+                Text(
+                  'Transmisi',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                    boxShadow: AppTheme.softShadow,
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: Wrap(
+                    spacing: 8,
+                    children: _transmissionOptions.map((trans) {
+                      final isSelected = _selectedTransmission == trans;
+                      return ChoiceChip(
+                        label: Text(trans.displayName),
+                        selected: isSelected,
+                        onSelected: (_) {
+                          setState(() => _selectedTransmission = trans);
+                        },
+                      );
+                    }).toList(),
                   ),
                 ),
                 const SizedBox(height: 20),

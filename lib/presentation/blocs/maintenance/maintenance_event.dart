@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../domain/models/maintenance_record.dart';
 import '../../../domain/models/maintenance_type.dart';
 
 abstract class MaintenanceEvent extends Equatable {
@@ -22,6 +23,8 @@ class RecordMaintenance extends MaintenanceEvent {
   final double? cost;
   final String? notes;
   final String? workshopName;
+  final int? workshopRating;
+  final String? workshopReview;
 
   RecordMaintenance({
     required this.vehicleId,
@@ -31,11 +34,13 @@ class RecordMaintenance extends MaintenanceEvent {
     this.cost,
     this.notes,
     this.workshopName,
+    this.workshopRating,
+    this.workshopReview,
   });
 
   @override
   List<Object?> get props =>
-      [vehicleId, type, mileageAtService, serviceDate, cost, notes, workshopName];
+      [vehicleId, type, mileageAtService, serviceDate, cost, notes, workshopName, workshopRating, workshopReview];
 }
 
 class LoadMaintenanceHistory extends MaintenanceEvent {
@@ -46,4 +51,13 @@ class LoadMaintenanceHistory extends MaintenanceEvent {
 
   @override
   List<Object?> get props => [vehicleId, filterType];
+}
+
+class UpdateMaintenanceRecord extends MaintenanceEvent {
+  final MaintenanceRecord record;
+
+  UpdateMaintenanceRecord(this.record);
+
+  @override
+  List<Object?> get props => [record];
 }

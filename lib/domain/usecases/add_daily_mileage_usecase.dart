@@ -93,7 +93,37 @@ class AddDailyMileageUseCase {
       vehicleName: updatedVehicle.name,
       vehicleType: updatedVehicle.type,
       schedules: schedules,
+      transmissionType: updatedVehicle.transmissionType,
     );
+
+    // Check for immediate alerts (warning zone or overdue)
+    final baseId = vehicleId.hashCode.abs() % 100000;
+    for (int i = 0; i < schedules.length; i++) {
+      final schedule = schedules[i];
+      final interval = getDefaultInterval(schedule.type, updatedVehicle.type, transmissionType: updatedVehicle.transmissionType);
+
+      if (schedule.isOverdue || schedule.remainingKm <= 0) {
+        // Overdue — fire immediate alert
+        await _notificationService?.showImmediateMaintenanceAlert(
+          notificationId: baseId + 1000 + i,
+          vehicleName: updatedVehicle.name,
+          vehicleType: updatedVehicle.type,
+          maintenanceType: schedule.type,
+          isOverdue: true,
+          remainingKm: schedule.remainingKm,
+        );
+      } else if (schedule.remainingKm <= interval.warningBeforeKm) {
+        // Just entered warning zone — fire immediate alert
+        await _notificationService?.showImmediateMaintenanceAlert(
+          notificationId: baseId + 1000 + i,
+          vehicleName: updatedVehicle.name,
+          vehicleType: updatedVehicle.type,
+          maintenanceType: schedule.type,
+          isOverdue: false,
+          remainingKm: schedule.remainingKm,
+        );
+      }
+    }
 
     return updatedVehicle;
   }

@@ -77,7 +77,8 @@ class MaintenanceCalculator {
 
     // Step 2: Get applicable maintenance types for this vehicle
     final List<MaintenanceType> applicableTypes =
-        getApplicableMaintenanceTypes(vehicle.type);
+        getApplicableMaintenanceTypes(vehicle.type,
+            transmissionType: vehicle.transmissionType);
 
     // Step 3: Get last maintenance record for each type
     final Map<MaintenanceType, MaintenanceRecord> lastServices =
@@ -96,16 +97,19 @@ class MaintenanceCalculator {
           interval = MaintenanceInterval(
             type: type,
             vehicleType: vehicle.type,
+            transmissionType: vehicle.transmissionType,
             kmInterval: custom.kmInterval,
             monthsInterval: custom.monthsInterval,
             warningBeforeKm: custom.warningBeforeKm,
             warningBeforeDays: custom.warningBeforeDays,
           );
         } else {
-          interval = getDefaultInterval(type, vehicle.type);
+          interval = getDefaultInterval(type, vehicle.type,
+              transmissionType: vehicle.transmissionType);
         }
       } else {
-        interval = getDefaultInterval(type, vehicle.type);
+        interval = getDefaultInterval(type, vehicle.type,
+            transmissionType: vehicle.transmissionType);
       }
       final lastService = lastServices[type];
 
@@ -145,11 +149,16 @@ class MaintenanceCalculator {
     return DateTime.now().add(Duration(days: estimatedDays));
   }
 
-  /// Returns all applicable MaintenanceType values for a given vehicle type.
+  /// Returns all applicable MaintenanceType values for a given vehicle type
+  /// and optional transmission type.
   ///
-  /// All types are applicable for motorcycles.
-  /// For cars, chainLube is excluded (cars don't have chains).
-  List<MaintenanceType> getApplicableMaintenanceTypes(VehicleType vehicleType) {
-    return getApplicableTypes(vehicleType);
+  /// All types are applicable for motorcycles (depending on transmission).
+  /// For cars, chainLube/chainAdjust are excluded (cars don't have chains).
+  List<MaintenanceType> getApplicableMaintenanceTypes(
+    VehicleType vehicleType, {
+    TransmissionType? transmissionType,
+  }) {
+    return getApplicableTypes(vehicleType,
+        transmissionType: transmissionType);
   }
 }

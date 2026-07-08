@@ -24,7 +24,7 @@ class DatabaseHelper {
 
     final db = await openDatabase(
       path,
-      version: 6,
+      version: 11,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -58,6 +58,21 @@ class DatabaseHelper {
     if (oldVersion < 6) {
       await _createDailyChecklistsTable(db);
       await _createMaintenanceBudgetsTable(db);
+    }
+    if (oldVersion < 7) {
+      await _createExpenseRecordsTable(db);
+    }
+    if (oldVersion < 8) {
+      await _addVehicleTransmissionColumn(db);
+    }
+    if (oldVersion < 9) {
+      await _createTroubleLogsTable(db);
+    }
+    if (oldVersion < 10) {
+      await _addWorkshopRatingColumns(db);
+    }
+    if (oldVersion < 11) {
+      await _createAnnualKmTargetsTable(db);
     }
   }
 
@@ -100,6 +115,53 @@ class DatabaseHelper {
     await db.execute('ALTER TABLE vehicles ADD COLUMN photoPath TEXT');
   }
 
+  static Future<void> _addVehicleTransmissionColumn(Database db) async {
+    await db.execute(
+        'ALTER TABLE vehicles ADD COLUMN transmissionType INTEGER');
+  }
+
+  static Future<void> _createAnnualKmTargetsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE annual_km_targets (
+        id TEXT PRIMARY KEY,
+        vehicleId TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        targetKm REAL NOT NULL,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (vehicleId) REFERENCES vehicles(id) ON DELETE CASCADE,
+        UNIQUE(vehicleId, year)
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_annual_km_targets_vehicle ON annual_km_targets(vehicleId)');
+  }
+
+  static Future<void> _addWorkshopRatingColumns(Database db) async {
+    await db.execute('ALTER TABLE maintenance_records ADD COLUMN workshopRating INTEGER');
+    await db.execute('ALTER TABLE maintenance_records ADD COLUMN workshopReview TEXT');
+  }
+
+  static Future<void> _createTroubleLogsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE trouble_logs (
+        id TEXT PRIMARY KEY,
+        vehicleId TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        severity INTEGER NOT NULL,
+        reportedDate TEXT NOT NULL,
+        odometerKm REAL,
+        isResolved INTEGER NOT NULL DEFAULT 0,
+        resolvedDate TEXT,
+        resolutionNotes TEXT,
+        maintenanceRecordId TEXT,
+        FOREIGN KEY (vehicleId) REFERENCES vehicles(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_trouble_vehicle_date ON trouble_logs(vehicleId, reportedDate)');
+  }
+
   static Future<void> _createDailyChecklistsTable(Database db) async {
     await db.execute('''
       CREATE TABLE daily_checklists (
@@ -133,6 +195,23 @@ class DatabaseHelper {
     ''');
     await db.execute(
         'CREATE INDEX idx_budgets_vehicle_year_month ON maintenance_budgets(vehicleId, year, month)');
+  }
+
+  static Future<void> _createExpenseRecordsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE expense_records (
+        id TEXT PRIMARY KEY,
+        vehicleId TEXT NOT NULL,
+        category TEXT NOT NULL,
+        amount REAL NOT NULL,
+        date TEXT NOT NULL,
+        description TEXT,
+        notes TEXT,
+        FOREIGN KEY (vehicleId) REFERENCES vehicles(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_expense_vehicle_date ON expense_records(vehicleId, date)');
   }
 
   static Future<void> _createVehicleDocumentsTable(Database db) async {
@@ -201,6 +280,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         type INTEGER NOT NULL,
+        transmissionType INTEGER,
         plateNumber TEXT NOT NULL,
         year INTEGER NOT NULL,
         totalMileageKm REAL NOT NULL DEFAULT 0,
@@ -230,6 +310,8 @@ class DatabaseHelper {
         cost REAL,
         notes TEXT,
         workshopName TEXT,
+        workshopRating INTEGER,
+        workshopReview TEXT,
         FOREIGN KEY (vehicleId) REFERENCES vehicles(id) ON DELETE CASCADE
       )
     ''');
@@ -279,6 +361,15 @@ class DatabaseHelper {
 
     // Maintenance budgets table
     await _createMaintenanceBudgetsTable(db);
+
+    // Expense records table
+    await _createExpenseRecordsTable(db);
+
+    // Trouble logs table
+    await _createTroubleLogsTable(db);
+
+    // Annual km targets table
+    await _createAnnualKmTargetsTable(db);
   }
 
   Future<void> close() async {

@@ -144,6 +144,135 @@ class SmartTipsEngine {
       }
     }
 
+    // V-Belt overdue — sangat kritis, bisa putus saat jalan
+    final vbeltSchedule =
+        schedules.where((s) => s.type == MaintenanceType.cvtVBelt).toList();
+    if (vbeltSchedule.isNotEmpty && vbeltSchedule.first.isOverdue) {
+      tips.add(SmartTip(
+        id: _uuid.v4(),
+        category: SmartTipCategory.maintenance,
+        priority: SmartTipPriority.high,
+        title: 'V-Belt melewati batas!',
+        description:
+            'V-Belt ${vehicle.name} sudah melewati batas penggantian. '
+            'Risiko putus saat jalan — motor bisa langsung berhenti mendadak!',
+        actionText: 'Lihat Jadwal',
+        vehicleId: vehicle.id,
+        generatedAt: now,
+      ));
+    }
+
+    // Kampas kopling overdue
+    final clutchSchedule = schedules
+        .where((s) => s.type == MaintenanceType.clutchPlate)
+        .toList();
+    if (clutchSchedule.isNotEmpty && clutchSchedule.first.isOverdue) {
+      tips.add(SmartTip(
+        id: _uuid.v4(),
+        category: SmartTipCategory.maintenance,
+        priority: SmartTipPriority.high,
+        title: 'Kampas kopling habis!',
+        description:
+            'Kampas kopling ${vehicle.name} sudah melewati batas. '
+            'Kopling slip = tenaga tidak tersalur, boros BBM, dan berbahaya.',
+        actionText: 'Lihat Jadwal',
+        vehicleId: vehicle.id,
+        generatedAt: now,
+      ));
+    }
+
+    // Oli gardan overdue
+    final gardanSchedule = schedules
+        .where((s) => s.type == MaintenanceType.finalDriveOil)
+        .toList();
+    if (gardanSchedule.isNotEmpty && gardanSchedule.first.isOverdue) {
+      tips.add(SmartTip(
+        id: _uuid.v4(),
+        category: SmartTipCategory.maintenance,
+        priority: SmartTipPriority.medium,
+        title: 'Oli gardan perlu diganti',
+        description:
+            'Oli gardan ${vehicle.name} sudah melewati jadwal. '
+            'Gardan kering bisa menyebabkan suara berisik dan kerusakan permanen.',
+        actionText: 'Lihat Jadwal',
+        vehicleId: vehicle.id,
+        generatedAt: now,
+      ));
+    }
+
+    // CVT roller overdue
+    final rollerSchedule = schedules
+        .where((s) => s.type == MaintenanceType.cvtRoller)
+        .toList();
+    if (rollerSchedule.isNotEmpty && rollerSchedule.first.isOverdue) {
+      tips.add(SmartTip(
+        id: _uuid.v4(),
+        category: SmartTipCategory.maintenance,
+        priority: SmartTipPriority.medium,
+        title: 'Roller CVT aus',
+        description:
+            'Roller CVT ${vehicle.name} sudah waktunya diganti. '
+            'Roller gepeng membuat tarikan berat, akselerasi lambat, dan konsumsi BBM boros.',
+        actionText: 'Lihat Jadwal',
+        vehicleId: vehicle.id,
+        generatedAt: now,
+      ));
+    }
+
+    // Rantai perlu dilumasi
+    final chainSchedule = schedules
+        .where((s) => s.type == MaintenanceType.chainLube)
+        .toList();
+    if (chainSchedule.isNotEmpty && chainSchedule.first.isOverdue) {
+      tips.add(SmartTip(
+        id: _uuid.v4(),
+        category: SmartTipCategory.maintenance,
+        priority: SmartTipPriority.medium,
+        title: 'Rantai perlu dilumasi',
+        description:
+            'Rantai ${vehicle.name} sudah waktunya dilumasi. '
+            'Rantai kering cepat aus, berisik, dan bisa putus tiba-tiba.',
+        actionText: 'Lihat Jadwal',
+        vehicleId: vehicle.id,
+        generatedAt: now,
+      ));
+    }
+
+    // Aki perlu diganti
+    final batterySchedule = schedules
+        .where((s) => s.type == MaintenanceType.battery)
+        .toList();
+    if (batterySchedule.isNotEmpty && batterySchedule.first.isOverdue) {
+      tips.add(SmartTip(
+        id: _uuid.v4(),
+        category: SmartTipCategory.maintenance,
+        priority: SmartTipPriority.medium,
+        title: 'Aki sudah tua',
+        description:
+            'Aki ${vehicle.name} sudah melewati usia pakai. '
+            'Aki lemah bisa bikin motor tidak bisa distarter, terutama saat pagi atau hujan.',
+        actionText: 'Lihat Jadwal',
+        vehicleId: vehicle.id,
+        generatedAt: now,
+      ));
+    }
+
+    // Transmisi belum diatur — ingatkan user
+    if (vehicle.transmissionType == null) {
+      tips.add(SmartTip(
+        id: _uuid.v4(),
+        category: SmartTipCategory.maintenance,
+        priority: SmartTipPriority.medium,
+        title: 'Lengkapi data ${vehicle.name}',
+        description:
+            'Jenis transmisi ${vehicle.name} belum diatur. '
+            'Jadwal perawatan CVT, rantai, dan kopling tidak akan muncul sampai transmisi dipilih.',
+        actionText: 'Atur Sekarang',
+        vehicleId: vehicle.id,
+        generatedAt: now,
+      ));
+    }
+
     return tips;
   }
 
@@ -582,17 +711,32 @@ class SmartTipsEngine {
   // ===========================================================================
 
   MaintenanceType _getMostCriticalType(List<MaintenanceSchedule> schedules) {
-    // Brake pads and tires are most critical
+    // Urutan prioritas kritis (paling berbahaya jika diabaikan di atas)
     const criticalOrder = [
       MaintenanceType.brakePads,
+      MaintenanceType.brakeFluidFlush,
       MaintenanceType.tireReplacement,
       MaintenanceType.brakeFluid,
+      MaintenanceType.suspension,
+      MaintenanceType.wheelBearing,
       MaintenanceType.oilChange,
+      MaintenanceType.cvtVBelt,
+      MaintenanceType.clutchPlate,
       MaintenanceType.coolant,
       MaintenanceType.transmission,
-      MaintenanceType.airFilter,
+      MaintenanceType.finalDriveOil,
+      MaintenanceType.cvtClutchShoe,
+      MaintenanceType.cvtDrivePlate,
+      MaintenanceType.cvtRoller,
+      MaintenanceType.cvtSpring,
       MaintenanceType.sparkPlug,
+      MaintenanceType.airFilter,
       MaintenanceType.chainLube,
+      MaintenanceType.chainAdjust,
+      MaintenanceType.battery,
+      MaintenanceType.valveAdjust,
+      MaintenanceType.throttleBodyClean,
+      MaintenanceType.injectorClean,
     ];
 
     for (final type in criticalOrder) {

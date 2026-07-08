@@ -1,5 +1,6 @@
 export 'vehicle.dart';
 export 'vehicle_type.dart';
+export 'transmission_type.dart';
 export 'vehicle_document.dart';
 export 'mileage_record.dart';
 export 'maintenance_record.dart';
@@ -15,3 +16,7 @@ export 'fuel_statistics.dart';
 export 'daily_checklist.dart';
 export 'maintenance_budget.dart';
 export 'smart_tip.dart';
+export 'expense_record.dart';
+export 'trouble_log.dart';
+export 'annual_km_target.dart';
+export 'trip_checklist.dart';

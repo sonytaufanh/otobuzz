@@ -10,6 +10,8 @@ class MaintenanceRecord extends Equatable {
   final double? cost;
   final String? notes;
   final String? workshopName;
+  final int? workshopRating; // 1-5 bintang
+  final String? workshopReview;
 
   const MaintenanceRecord({
     required this.id,
@@ -20,6 +22,8 @@ class MaintenanceRecord extends Equatable {
     this.cost,
     this.notes,
     this.workshopName,
+    this.workshopRating,
+    this.workshopReview,
   });
 
   Map<String, dynamic> toMap() {
@@ -32,6 +36,8 @@ class MaintenanceRecord extends Equatable {
       'cost': cost,
       'notes': notes,
       'workshopName': workshopName,
+      'workshopRating': workshopRating,
+      'workshopReview': workshopReview,
     };
   }
 
@@ -45,6 +51,34 @@ class MaintenanceRecord extends Equatable {
       cost: map['cost'] != null ? (map['cost'] as num).toDouble() : null,
       notes: map['notes'] as String?,
       workshopName: map['workshopName'] as String?,
+      workshopRating: map['workshopRating'] as int?,
+      workshopReview: map['workshopReview'] as String?,
+    );
+  }
+
+  MaintenanceRecord copyWith({
+    String? id,
+    String? vehicleId,
+    MaintenanceType? type,
+    double? mileageAtService,
+    DateTime? serviceDate,
+    double? cost,
+    String? notes,
+    String? workshopName,
+    int? workshopRating,
+    String? workshopReview,
+  }) {
+    return MaintenanceRecord(
+      id: id ?? this.id,
+      vehicleId: vehicleId ?? this.vehicleId,
+      type: type ?? this.type,
+      mileageAtService: mileageAtService ?? this.mileageAtService,
+      serviceDate: serviceDate ?? this.serviceDate,
+      cost: cost ?? this.cost,
+      notes: notes ?? this.notes,
+      workshopName: workshopName ?? this.workshopName,
+      workshopRating: workshopRating ?? this.workshopRating,
+      workshopReview: workshopReview ?? this.workshopReview,
     );
   }
 
@@ -58,5 +92,7 @@ class MaintenanceRecord extends Equatable {
         cost,
         notes,
         workshopName,
+        workshopRating,
+        workshopReview,
       ];
 }

@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import '../../domain/models/maintenance_record.dart';
 import '../../domain/models/maintenance_schedule.dart';
 import '../../domain/models/maintenance_type.dart';
+import '../../domain/models/transmission_type.dart';
 import '../../domain/models/vehicle.dart';
 import '../../domain/models/vehicle_type.dart';
 import '../repositories/cost_report_repository.dart';
@@ -409,6 +410,8 @@ class PdfReportService {
           _buildInfoRow('Plat Nomor', vehicle.plateNumber),
           _buildInfoRow('Jenis', typeLabel),
           _buildInfoRow('Tahun', vehicle.year.toString()),
+          if (vehicle.transmissionType != null)
+            _buildInfoRow('Transmisi', vehicle.transmissionType!.displayName),
           _buildInfoRow(
               'Total Kilometer', '${vehicle.totalMileageKm.round()} km'),
         ],

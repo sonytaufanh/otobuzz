@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/utils/undo_service.dart';
 import '../../data/repositories/custom_interval_repository.dart';
+import '../../domain/models/transmission_type.dart';
 import '../../domain/models/vehicle.dart';
 import '../../domain/models/vehicle_type.dart';
 import '../../domain/repositories/vehicle_repository.dart';
@@ -196,9 +197,43 @@ class _VehicleListItem extends StatelessWidget {
           ),
         ),
         title: Text(vehicle.name),
-        subtitle: Text(
-          '${vehicle.plateNumber} • ${vehicle.totalMileageKm.round()} km',
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${vehicle.plateNumber} • ${vehicle.totalMileageKm.round()} km',
+            ),
+            if (vehicle.transmissionType != null) ...[
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  vehicle.transmissionType!.displayName,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onPrimaryContainer,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
+            ] else ...[
+              const SizedBox(height: 4),
+              Text(
+                '⚠ Transmisi belum diatur',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+              ),
+            ],
+          ],
         ),
+        isThreeLine: true,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

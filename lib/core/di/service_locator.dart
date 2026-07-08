@@ -7,7 +7,12 @@ import '../../data/repositories/cost_report_repository.dart';
 import '../../data/repositories/custom_interval_repository.dart';
 import '../../data/repositories/driver_assignment_repository.dart';
 import '../../data/repositories/driver_repository.dart';
+import '../../data/repositories/annual_km_target_repository_impl.dart';
+import '../../data/repositories/expense_repository.dart';
 import '../../data/repositories/fuel_repository.dart';
+import '../../data/repositories/trouble_log_repository_impl.dart';
+import '../../domain/repositories/annual_km_target_repository.dart';
+import '../../domain/repositories/trouble_log_repository.dart';
 import '../../data/repositories/maintenance_history_repository_impl.dart';
 import '../../data/repositories/maintenance_schedule_repository_impl.dart';
 import '../../data/repositories/mileage_repository_impl.dart';
@@ -25,6 +30,7 @@ import '../../presentation/blocs/fuel/fuel_bloc.dart';
 import '../../presentation/blocs/maintenance/maintenance_bloc.dart';
 import '../../presentation/blocs/mileage/mileage_bloc.dart';
 import '../../presentation/blocs/theme/theme_cubit.dart';
+import '../../presentation/blocs/trouble_log/trouble_log_bloc.dart';
 import '../../presentation/blocs/vehicle/vehicle_bloc.dart';
 
 final sl = GetIt.instance;
@@ -64,6 +70,12 @@ Future<void> setupServiceLocator() async {
       () => ChecklistRepository(sl<DatabaseHelper>()));
   sl.registerLazySingleton<BudgetRepository>(
       () => BudgetRepository(sl<DatabaseHelper>()));
+  sl.registerLazySingleton<ExpenseRepository>(
+      () => ExpenseRepository(sl<DatabaseHelper>()));
+  sl.registerLazySingleton<TroubleLogRepository>(
+      () => TroubleLogRepositoryImpl(sl<DatabaseHelper>()));
+  sl.registerLazySingleton<AnnualKmTargetRepository>(
+      () => AnnualKmTargetRepositoryImpl(sl<DatabaseHelper>()));
 
   // ─── Use Cases ─────────────────────────────────────────────────────────────
   sl.registerLazySingleton<MaintenanceCalculator>(() => MaintenanceCalculator(
@@ -88,6 +100,11 @@ Future<void> setupServiceLocator() async {
           ));
   sl.registerLazySingleton<GetVehicleSchedulesUseCase>(
       () => GetVehicleSchedulesUseCase(sl<MaintenanceScheduleRepository>()));
+  sl.registerLazySingleton<PredictMaintenanceCostUseCase>(
+      () => PredictMaintenanceCostUseCase(
+        sl<MaintenanceScheduleRepository>(),
+        sl<MaintenanceHistoryRepository>(),
+      ));
 
   // ─── BLoCs (Factory - new instance each time) ──────────────────────────────
   sl.registerFactory<ThemeCubit>(
@@ -101,6 +118,8 @@ Future<void> setupServiceLocator() async {
   sl.registerFactory<MileageBloc>(() => MileageBloc(
         sl<AddDailyMileageUseCase>(),
         sl<MileageRepository>(),
+        sl<VehicleRepository>(),
+        sl<MaintenanceScheduleRepository>(),
       ));
   sl.registerFactory<MaintenanceBloc>(() => MaintenanceBloc(
         sl<GetVehicleSchedulesUseCase>(),
@@ -116,6 +135,8 @@ Future<void> setupServiceLocator() async {
         sl<MaintenanceHistoryRepository>(),
         sl<FuelRepository>(),
       ));
+  sl.registerFactory<TroubleLogBloc>(
+      () => TroubleLogBloc(sl<TroubleLogRepository>()));
 
   // ─── Initialize async services ─────────────────────────────────────────────
   final dbHelper = sl<DatabaseHelper>();
